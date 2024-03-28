@@ -70,11 +70,19 @@ INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
         apt remove virt-manager -y
         apt remove virt-viewer -y
         apt remove virtinst -y
+        apt remove dnsmasq -y
         apt autoremove -y
 
     else
         # add root user group on libvirt
-        sudo adduser "$USER" libvirt
+        sudo adduser "$USER" libvirt        # caso exista sudo
+        usermod -aG libvirt "$USER"         # caso tenha somente root user
+
+        echo -e "seu usuario foi definido? caso nao verifique a adicao de grupo de usuarios."
+        getent group libvirt
+        getent group libvirt-qemu
+
+        apt install dnsmasq -y
 
         # Make Network active and auto-restart
         virsh net-start default

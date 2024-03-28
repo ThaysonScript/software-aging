@@ -102,21 +102,25 @@ START_VM() {
 # FUNCTION=ATTACH_DISK()
 # RUN FOR HELPER:
 #   virsh attach-disk --help
+#
+# verifique a anexagem dos discos com virsh domblklist <vmName> ou simplesmente lsblk dentro da vm
 ATTACH_DISK() {
   local disk_path="$1"
   local target="$2"
 
-  virsh attach-disk "$VM_NAME" --source "$disk_path" --target "$target" --persistent --config
+  virsh attach-disk "$VM_NAME" --source "$disk_path" --target "$target" --persistent --config > /dev/null
 }
 
 # FUNCTION=DETACH_DISK()
 # RUN FOR HELPER:
 #   virsh detach-disk --help
+#
+# verifique a desanexagem dos discos com virsh domblklist <vmName> ou simplesmente lsblk dentro da vm
 DETACH_DISK() {
   local target="$1"
 
   # virsh detach-disk "$VM_NAME" "$disk_path"
-  virsh detach-disk "$VM_NAME" "$target" --persistent --config
+  virsh detach-disk "$VM_NAME" "$target" --persistent --config > /dev/null
 }
 
 # FUNCTION=TURN_ON_GRAPHICAL_INTERFACE()

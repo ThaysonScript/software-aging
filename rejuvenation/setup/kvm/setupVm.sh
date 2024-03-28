@@ -152,6 +152,12 @@ NETWORK_REDIRECT_SETTINGS() {
   cd ..
 }
 
+CONFIG_QEMU_DOT_CONF() {
+  cp /etc/libvirt/qemu.conf /etc/libvirt/qemu.conf.backup.old
+  cat ./qemu.conf > /etc/libvirt/qemu.conf
+}
+
+
 SETUP_VM() {
   DISKS_MANAGEMENT
   CREATE_VIRTUAL_MACHINE  # verificar se maquina liga completamente antes de passar para baixo
@@ -159,6 +165,8 @@ SETUP_VM() {
   NETWORK_REDIRECT_SETTINGS
 
   TEST_VIRTUAL_MACHINE_SERVER
+
+  CONFIG_QEMU_DOT_CONF
 }
 
 SETUP_VM
