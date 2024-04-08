@@ -71,11 +71,11 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-allow-hotplug enp0s3
-iface enp0s3 inet manual
+allow-hotplug eno1 
+iface eno1 inet manual
 
 auto xenbr0
-iface xenbr0 inet dhcp
+iface xenbr0 inet dhcp 
     bridge_ports $default_interface
 EOL
 
@@ -88,11 +88,32 @@ EOL
 #   Redirect HTTP traffic from port 8080 on the host to port 80 on the Xen domU
 #   Check if the redirection rules are correctly applied
 REDIRECT_PORTS(){
-  iptables -t nat -A PREROUTING -p tcp --dport 2222 -j DNAT --to 10.0.2.17:22
+  # Flush existing rules
+  iptables -t nat -F
 
-  iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to 10.0.2.17:80
+  echo "1" > /proc/sys/net/ipv4/ip_forward
 
-  if iptables -t nat -L | grep -qE '(to:10.0.2.17:22|to:10.0.2.17:80)'; then
+  LAN_INTERFACE="xenbr0"
+
+  iptables -t nat -A POSTROUTING -s 172.20.101.23/22 -o xenbr0 -j MASQUERADE
+
+  iptables -t nat -A PREROUTING -t tcp -i xenbr0 --dport 2222 -j DNAT --to 172.20.100.178:22
+
+  iptables -t nat -A PREROUTING -t tcp -i xenbr0 --dport 8080 -j DNAT --to 172.20.100.178:80
+
+  iptables-save > /etc/iptables/rules.v4
+
+  # Create a script to load iptables rules during startup
+  cat > /etc/network/if-pre-up.d/iptables <<EOL
+#!/bin/sh
+/sbin/iptables-restore < /etc/iptables/rules.v4
+EOL
+
+  chmod +x /etc/network/if-pre-up.d/iptables
+
+  apt-get install -y iptables-persistent
+
+  if iptables -t nat -L | grep -qE '(to:172.20.100.178:22|to:172.20.100.178:80)'; then
     echo "Port redirection rules have been successfully applied."
   else
     echo "Failed to apply port redirection rules. Please check iptables configuration."
@@ -110,13 +131,13 @@ REDIRECT_PORTS(){
 #   LV - Logical Volumes. LVs sit inside a Volume Group and form, in effect, a virtual partition
 #
 # LVM COMMANDS:
-#   pvcreate - declares /dev/sda4 as a physical volume available for the LVM
+#   pvcreate - declares /dev/sda4 ( /dev/nvme0n1p4 ) as a physical volume available for the LVM
 #   vgcreate - creates a volume group called 'vg0'
 #
-# REMINDER: Before using this function, ensure that /dev/sda4 is a dedicated partition you created for LVM use
+# REMINDER: Before using this function, ensure that /dev/sda4 ( /dev/nvme0n1p4 ) is a dedicated partition you created for LVM use
 STORAGE_SETUP() { 
-    pvcreate /dev/sda4
-    vgcreate vg0 /dev/sda4
+    pvcreate /dev/nvme0n1p4 
+    vgcreate vg0 /dev/nvme0n1p4
 }
 
 DEPENDENCIES_MAIN(){
@@ -126,6 +147,7 @@ DEPENDENCIES_MAIN(){
   INSTALL_UTILS
   CONFIGURE_GRUB_FOR_XEN
   NETWORK_CONFIG
+  REDIRECT_PORTS
   STORAGE_SETUP
   reboot now
 }

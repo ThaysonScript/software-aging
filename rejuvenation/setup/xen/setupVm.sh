@@ -67,7 +67,7 @@ DISKS_MANAGEMENT() {
 TEST_VIRTUAL_MACHINE_SERVER() {
   sleep 10
 
-  if ! curl http://localhost:80; then
+  if ! curl http://172.20.100.178:80; then
     echo -e "ERROR: error when trying to start xenDebian's nginx server\n"
   fi
 }
@@ -86,6 +86,7 @@ START_MACHINE() {
 
 SETUP_VM() {
   DISKS_MANAGEMENT
+  CREATING_DOMU_ROLES
   CREATE_VIRTUAL_MACHINE
   START_MACHINE
   TEST_VIRTUAL_MACHINE_SERVER
