@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to continuously monitor the xen-balloon process and log resource usage to a CSV file
+# Script to continuously monitor the Xen process xen-balloon and log resource usage to a CSV file
 
 while true; do
   :
@@ -20,7 +20,7 @@ while true; do
     echo "$cpu;$mem;$vmrss;$vsz;$thread;$swap;$date_time" >> logs/xen_monitoring-xen-balloon.csv
   else
     sleep 1
-    echo "0;0;0;0;0;0;0" >> logs/xen_monitoring-xen-balloon.csv
+    echo "0;0;0;0;0;0;0" >> logs/xen_monitoring-balloon.csv
   fi
 
 done
