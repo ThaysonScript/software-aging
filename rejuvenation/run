@@ -11,8 +11,8 @@
 ###############################################################################################
 
 # STATIC USAGE:
-#   vbox | kvm | xen
-readonly VIRTUALIZER_TYPE="vbox"
+#   vbox | kvm | xen | lxc
+readonly VIRTUALIZER_TYPE="xen"
 
 # ############################## IMPORTS #############################
 case "$VIRTUALIZER_TYPE" in
