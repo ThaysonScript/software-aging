@@ -28,7 +28,6 @@ KVM_HEADERS() {
 XEN_HEADERS() {
   echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/xen_monitoring-xenbus.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-oxenstored.csv
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/xen_monitoring-xl.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xen-balloon.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xenconsoled.csv
 }
@@ -53,7 +52,6 @@ case $VIRTUALIZER_TYPE in
     XEN_HEADERS
     processes/xenstored_monitoring.sh &
     processes/xenbus_monitoring.sh &
-    processes/xen_xl_monitoring.sh &
     processes/xen-balloon_monitoring.sh &
     processes/xenconsoled_monitoring.sh &
     ;;
