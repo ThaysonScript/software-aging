@@ -101,8 +101,8 @@ if [ "$service" == "1" ]; then
   # echo -e "Are you using the latest version of Docker? 1 - [yes] 2 - [no]"
   # read -r service
 
-  printf "%s\n" -e "Do you want to install the new [1] or old [2] version of docker?"
-  printf "%s\n" -e "new version - [1]"
+  printf "%s\n" "Do you want to install the new [1] or old [2] version of docker?"
+  printf "%s\n" "new version - [1]"
   printf "%s\n" "old version [2]"
   read -r -p "choice: " stap
 
