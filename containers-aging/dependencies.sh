@@ -98,18 +98,18 @@ fi
 echo -e "Which service are you using? 1 - [Docker] 2 - [Podman] 3 - None"
 read -r service
 if [ "$service" == "1" ]; then
-  echo -e "Are you using the latest version of Docker? 1 - [yes] 2 - [no]"
-  read -r service
-
-  apt-get install ca-certificates curl
-  install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  chmod a+r /etc/apt/keyrings/docker.asc
+  # echo -e "Are you using the latest version of Docker? 1 - [yes] 2 - [no]"
+  # read -r service
 
   printf "%s\n" -e "Do you want to install the new [1] or old [2] version of docker?"
   printf "%s\n" -e "new version - [1]"
   printf "%s\n" "old version [2]"
   read -r -p "choice: " stap
+
+  apt-get install ca-certificates curl
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  chmod a+r /etc/apt/keyrings/docker.asc
 
   if [ "$stap" == "1" ]; then
     case $DISTRO_ID in
