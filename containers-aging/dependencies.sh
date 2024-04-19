@@ -167,7 +167,23 @@ DOCKER_INSTALL() {
 }
 
 PODMAN_INSTALL_DEPENDENCIES() {
-  apt install git gcc make wget pkg-config -y
+  mkdir -p /etc/containers
+
+  if [ ! -f "/etc/containers/policy.json" ]; then
+    touch /etc/containers/policy.json
+
+    cat <<EOF >/etc/containers/policy.json
+{
+  "default": [
+    {
+      "type": "insecureAcceptAnything"
+    }
+  ]
+}
+EOF
+  fi
+
+  apt install git gcc make wget pkg-config conmon -y
   apt-get install -y libsystemd-dev libgpgme-dev libseccomp-dev -y
 
   wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
@@ -194,24 +210,13 @@ PODMAN_INSTALL() {
 }
 
 ADD_PATH_PACKAGES() {
-  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>/home/"$(logname)"/.bashrc
-  echo "export PATH=$PATH:/usr/local/go/bin" >>/home/"$(logname)"/.bashrc
-  echo "export PATH=$PATH:~/podman/bin" >>/home/"$(logname)"/.bashrc
-
-  # shellcheck disable=SC1090
-  source /home/"$(logname)"/.bashrc
-
-  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>/"$(whoami)"/.bashrc
-  echo "export PATH=$PATH:/usr/local/go/bin" >>/"$(whoami)"/.bashrc
-  echo "export PATH=$PATH:~/podman/bin" >>/"$(whoami)"/.bashrc
-
-  # shellcheck disable=SC1090
-  source /"$(whoami)"/.bashrc
+  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:/usr/local/go/bin" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:/home/$(logname)/podman/bin" >>"$HOME"/.bashrc
 }
 
 MAIN() {
   # reset
-  ADD_PATH_PACKAGES
 
   INSTALL_PYTHON_DEPENDENCIES
   INSTALL_QEMU_KVM_DEPENDENCIES
@@ -242,5 +247,7 @@ MAIN() {
 
   echo "Finished and venv is active, change the config.yaml file"
 }
+
+ADD_PATH_PACKAGES && echo "faca: source /root/.bashrc" && echo "execute novamente o mesmo codigo e depois retire ou comente esta linha toda" && exit 0
 
 MAIN
