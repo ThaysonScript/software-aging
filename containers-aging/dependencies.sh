@@ -62,12 +62,12 @@ INSTALL_DOCKER_DEBIAN_NEW() {
 INSTALL_PYTHON_DEPENDENCIES() {
   echo -e "installing python dependencies...."
 
-  apt install python3.11 python3.11-venv || {
+  apt install python3 python3-venv || {
     printf "%s\n" "Error: python install dependencies error!"
     exit 1
   }
 
-  python3.11 -m venv env
+  python3 -m venv env
 
   source env/bin/activate
 
@@ -103,7 +103,7 @@ INSTALL_LIBRARIES_FOR_MONITORING() {
 
   read -r -p "choice: " choice
   if [ "$choice" -eq 1 ]; then
-    apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbg gnupg wget sysstat systemtap -y
+    apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbg gnupg curl wget sysstat systemtap -y
     cp /proc/kallsyms /boot/System.map-"$KERNEL_VERSION"
 
   else
@@ -183,7 +183,7 @@ PODMAN_INSTALL_DEPENDENCIES() {
 EOF
   fi
 
-  apt install git gcc make wget pkg-config conmon -y
+  apt install git gcc make curl wget pkg-config conmon crun containernetworking-plugins iptables -y
   apt-get install -y libsystemd-dev libgpgme-dev libseccomp-dev -y
 
   wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
@@ -210,9 +210,11 @@ PODMAN_INSTALL() {
 }
 
 ADD_PATH_PACKAGES() {
+  podman_dir=$(find / -name podman -print -quit)
+
   echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"$HOME"/.bashrc
   echo "export PATH=\$PATH:/usr/local/go/bin" >>"$HOME"/.bashrc
-  echo "export PATH=\$PATH:/home/$(logname)/podman/bin" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:$podman_dir/bin" >>"$HOME"/.bashrc
 }
 
 MAIN() {
