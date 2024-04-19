@@ -97,6 +97,7 @@ INSTALL_QEMU_KVM_DEPENDENCIES() {
 }
 
 INSTALL_LIBRARIES_FOR_MONITORING() {
+  reset
   printf "\n%s\n" "Would you like to install monitoring libraries?"
   printf "%s\n" "Yes - [1]"
   printf "%s\n" "No - [2]"
@@ -119,8 +120,6 @@ INSTALL_DOCKER_DEPENDENCIES() {
 }
 
 DOCKER_INSTALL() {
-  # reset
-
   printf "\n%s\n" "Do you want to install the new version or old version of docker?"
   printf "%s\n" "new version - [1]"
   printf "%s\n" "old version - [2]"
@@ -157,11 +156,7 @@ DOCKER_INSTALL() {
   groupadd docker
   usermod -aG docker "$USER"
 
-  newgrp docker &
-  pid=$!
-  echo "subshell dead newgrp docker: $pid"
-  kill "$pid"
-  echo "pid is dead!"
+  newgrp docker & pid=$!; echo "subshell dead newgrp docker: $pid"; kill "$pid"; echo "pid is dead!"
 
   docker run hello-world
 }
@@ -191,8 +186,6 @@ EOF
 }
 
 PODMAN_INSTALL() {
-  # reset
-
   echo "Installing Podman..."
 
   git clone https://github.com/containers/podman.git
@@ -209,19 +202,23 @@ PODMAN_INSTALL() {
   podman run docker.io/hello-world
 }
 
-ADD_PATH_PACKAGES() {
-  podman_dir=$(find / -name podman -print -quit)
-
+ADD_ROOT_PATH_PACKAGES() {
   echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"$HOME"/.bashrc
   echo "export PATH=\$PATH:/usr/local/go/bin" >>"$HOME"/.bashrc
-  echo "export PATH=\$PATH:$podman_dir/bin" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:/root/podman/bin" >>"$HOME"/.bashrc
+}
+
+ADD_HOME_PATH_PACKAGES() {
+  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:/usr/local/go/bin" >>"$HOME"/.bashrc
+  echo "export PATH=\$PATH:/home/$(logname)/podman/bin" >>"$HOME"/.bashrc
 }
 
 MAIN() {
-  # reset
+  reset
 
-  INSTALL_PYTHON_DEPENDENCIES
   INSTALL_QEMU_KVM_DEPENDENCIES
+  INSTALL_PYTHON_DEPENDENCIES
   INSTALL_LIBRARIES_FOR_MONITORING
 
   printf "%s\n" "Which service are you using?"
@@ -243,13 +240,30 @@ MAIN() {
     exit 1
   fi
 
-  # reset
   printf "%s\n" "autoremoving packages not necessary"
   apt autoremove -y
 
   echo "Finished and venv is active, change the config.yaml file"
 }
 
-ADD_PATH_PACKAGES && echo "faca: source /root/.bashrc" && echo "execute novamente o mesmo codigo e depois retire ou comente esta linha toda" && exit 0
+reset
+printf "%s\n" "vai usar diretorio root, home ou já configurou as paths no .bashrc?"
+printf "%s\n" "Root - [1]"
+printf "%s\n" "Home - [2]"
+printf "%s\n" "Diretorio Configurado (prosseguir instalação) - [3]"
+printf "%s\n" "Sair - [4]"
 
-MAIN
+read -r -p "choice: " diretorio
+if [ "$diretorio" -eq 1 ]; then
+  ADD_ROOT_PATH_PACKAGES && echo "faca: ( source /root/.bashrc ) e execute novamente o mesmo codigo digitando a opção [3] ou [4]" && exit 0
+
+elif [ "$diretorio" -eq 2 ]; then
+  ADD_HOME_PATH_PACKAGES && echo "faca: ( source /root/.bashrc ) e execute novamente o mesmo codigo digitando a opção [3] ou [4]" && exit 0
+
+elif [ "$diretorio" -eq 3 ]; then
+  MAIN
+
+else
+  echo "saindo....." && exit 0
+
+fi
