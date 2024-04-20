@@ -23,8 +23,7 @@ IF_DISTRO_UBUNTU() {
 if [ "$DISTRO_ID" == "ubuntu" ]; then
   echo "por padrao voce precisa logar como root para distro ubuntu server"
   echo "isto é necessário para obter caminhos de variaveis definidas sempre a nível de user root"
-  echo "não se preocupe, será adicionado esta senha para root somente quando o script de dependencia estiver executando"
-  echo "ao finalizar a execucao o login para o user root será removido"
+  echo "não se preocupe, quando a maquina for rebootada esta senha sera removida"
 
   printf "\n%s\n" "Adicione uma nova senha para o user root abaixo: "
   passwd root
@@ -53,7 +52,7 @@ INSTALL_DOCKER_UBUNTU_OLD() {
   ADD_UBUNTU_DOCKER_REPOSITORY
 
   VERSION_STRING="5:20.10.13~3-0~ubuntu-$DISTRO_CODENAME"
-  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin -y
+  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
 
 }
 
@@ -61,7 +60,7 @@ INSTALL_DOCKER_UBUNTU_NEW() {
   ADD_UBUNTU_DOCKER_REPOSITORY
 
   VERSION_STRING="5:26.0.1-1~ubuntu.$SYSTEM_VERSION~$DISTRO_CODENAME"
-  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin -y
+  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
 INSTALL_DOCKER_DEBIAN_OLD() {
@@ -71,7 +70,7 @@ INSTALL_DOCKER_DEBIAN_OLD() {
     ADD_DEBIAN_DOCKER_REPOSITORY
 
   VERSION_STRING="5:20.10.13~3-0~debian-bullseye"
-  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin -y
+  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
 INSTALL_DOCKER_DEBIAN_NEW() {
@@ -81,7 +80,7 @@ INSTALL_DOCKER_DEBIAN_NEW() {
     ADD_DEBIAN_DOCKER_REPOSITORY
 
   VERSION_STRING="5:26.0.1-1~debian.11~bullseye"
-  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin -y
+  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
 INSTALL_PYTHON_DEPENDENCIES() {
@@ -155,7 +154,7 @@ INSTALL_LIBRARIES_FOR_MONITORING() {
 }
 
 INSTALL_DOCKER_DEPENDENCIES() {
-  apt install ca-certificates curl -y
+  apt install ca-certificates curl
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   chmod a+r /etc/apt/keyrings/docker.asc
@@ -308,9 +307,6 @@ elif [ "$diretorio" -eq 3 ]; then
     [[ "$(pwd)" != "/root" ]] && echo "execute a pasta a partir do diretorio /root" && exit 1
   fi
   MAIN
-
-  printf "\n%s\n" "retirando acesso ao user root definido no inicio da execucao: " && sleep 3
-  passwd -dl root
 
 elif [ "$diretorio" -eq 4 ]; then
   IF_DISTRO_UBUNTU
