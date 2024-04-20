@@ -10,7 +10,7 @@ monitor_service() {
   #rabbitmq pgrep -f "rabbitmq-server"
   #postgres pgrep -f "/usr/lib/postgresql/15/bin/postgres -D /usr/local/pgsql/data -i"
 
-  until pgrep -f "rabbitmq-server" >/dev/null; do
+  until pgrep -x "nginx" >/dev/null; do
     echo ""
   done
 
@@ -24,10 +24,10 @@ monitor_service() {
 monitor_service &
 
 # RabbitMQ
-/usr/lib/rabbitmq/bin/rabbitmq-server
+#/usr/lib/rabbitmq/bin/rabbitmq-server
 
 #nginx
-#nginx -g "daemon off;"
+nginx -g "daemon off;"
 
 #Postgres
 #if [ -z "$(ls -A /usr/local/pgsql/data)" ]; then

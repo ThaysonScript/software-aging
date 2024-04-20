@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 import sys
@@ -58,12 +57,11 @@ class Environment:
             old_system: bool,
             run_only_monitoring: bool,
             scripts_folder: str,
-            min_container_wait_time: int,
-            max_container_wait_time: int,
             max_qtt_containers: int,
             min_qtt_containers: int,
             max_lifecycle_runs: int,
-            min_lifecycle_runs: int
+            min_lifecycle_runs: int,
+            sleep_time_container_metrics: int
     ):
         log_dir = software
         if old_software:
@@ -79,7 +77,6 @@ class Environment:
 
         self.logs_dir = log_dir
         self.containers = containers
-        self.max_container_wait_time = max_container_wait_time
         self.path = scripts_folder
         self.sleep_time = sleep_time
         self.software = software
@@ -88,11 +85,11 @@ class Environment:
         self.wait_after_stress = wait_after_stress
         self.runs = runs
         self.run_only_monitoring = run_only_monitoring
-        self.min_container_wait_time = min_container_wait_time
         self.max_qtt_containers = max_qtt_containers
         self.min_qtt_containers = min_qtt_containers
         self.max_lifecycle_runs = max_lifecycle_runs
         self.min_lifecycle_runs = min_lifecycle_runs
+        self.sleep_time_container_metrics = sleep_time_container_metrics
 
     def clean(self):
         print("Cleaning old logs and containers")
@@ -101,22 +98,20 @@ class Environment:
         self.clear_containers_and_images()
 
     def clear_containers_and_images(self):
-        for container in self.containers:
-            execute_command(f"rm -f {self.path}/{container}", continue_if_error=True)
         execute_command(f"{self.software} stop $({self.software} ps -aq)", continue_if_error=True)
         execute_command(f"{self.software} rm $({self.software} ps -aq)", continue_if_error=True)
         execute_command(f"{self.software} rmi $({self.software} image ls -aq)", continue_if_error=True)
 
     def run(self):
         self.clean()
-        self.start_teastore()
+        # self.start_teastore()
         self.start_monitoring()
 
         now = datetime.now()
         end = datetime.now() + timedelta(
             seconds=(self.max_stress_time * self.runs + self.wait_after_stress * self.runs))
         seconds = (end - now).total_seconds()
-        print(f"Script should end at around {end}")
+        print(f"{now} - Script should end at around {end}")
 
         if self.run_only_monitoring:
             print(f"Waiting {seconds} seconds")
@@ -128,7 +123,7 @@ class Environment:
                 self.init_containers_threads(self.max_stress_time)
 
             self.__print_progress_bar(self.runs, "Progress")
-        print(f"Ended at {datetime.now()}")
+        print(f"\nEnded at {datetime.now()}")
         self.clear_containers_and_images()
 
     def start_teastore(self):
@@ -151,10 +146,47 @@ class Environment:
 
     def start_monitoring(self):
         print("Starting monitoring scripts")
-        self.systemtap()
+        # self.systemtap()
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
         monitoring_thread.daemon = True
         monitoring_thread.start()
+
+        if not self.run_only_monitoring:
+            container_metrics_thread = threading.Thread(target=self.container_metrics, name="container_metrics")
+            container_metrics_thread.daemon = True
+            container_metrics_thread.start()
+
+    def container_lifecycle(self):
+        for container in self.containers:
+            container_name = container["name"]
+            host_port = container["host_port"]
+            container_port = container["port"]
+
+            load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
+
+            start_time = get_time(
+                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
+
+            up_time = execute_command(
+                f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
+                continue_if_error=True, error_informative=False)
+
+            while up_time is None:
+                up_time = execute_command(
+                    f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
+                    continue_if_error=True, error_informative=False)
+
+            stop_time = get_time(f"{self.software} stop {container_name}")
+
+            remove_container_time = get_time(f"{self.software} rm {container_name}")
+
+            remove_image_time = get_time(f"{self.software} rmi {container_name}")
+
+            write_to_file(
+                f"{self.path}/{self.logs_dir}/{container_name}.csv",
+                "load_image;start;up_time;stop;remove_container;remove_image",
+                f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time}"
+            )
 
     def machine_resources(self):
         while True:
@@ -166,28 +198,25 @@ class Environment:
             self.process_monitoring(date_time)
             time.sleep(self.sleep_time)
 
-    def container_lifecycle(self, image_name, host_port, container_port, min_container_wait_time,
-                            max_container_wait_time, run):
+    def container_metrics(self):
+        while True:
+            self.container_lifecycle()
+            time.sleep(self.sleep_time_container_metrics)
+
+    def container_stressload(self, image_name, host_port, container_port, min_container_wait_time,
+                             max_container_wait_time, run):
 
         sleep_time = random.randint(min_container_wait_time, max_container_wait_time)
         qtt_containers = random.randint(self.min_qtt_containers, self.max_qtt_containers)
 
+        image_name = "temp_" + image_name
         time.sleep(sleep_time)
 
-        load_image_time = get_time(f"{self.software} load -i {self.path}/{image_name}.tar -q")
-
-        start_list = []
-        up_list = []
-        stop_list = []
-        remove_list = []
         for i in range(qtt_containers):
-            container_name = f"container-{run}-{i}"
+            container_name = f"temp_{image_name}-{run}-{i}"
 
-            start_time = get_time(
+            execute_command(
                 f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
-
-            start_list.append(start_time)
-
             up_time = execute_command(
                 f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                 continue_if_error=True, error_informative=False)
@@ -197,27 +226,13 @@ class Environment:
                     f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                     continue_if_error=True, error_informative=False)
 
-            up_list.append(up_time)
-
-            stop_time = get_time(f"{self.software} stop {container_name}")
-
-            stop_list.append(stop_time)
-
-            remove_container_time = get_time(f"{self.software} rm {container_name}")
-
-            remove_list.append(remove_container_time)
-
-        remove_image_time = get_time(f"{self.software} rmi {image_name}")
-
-        write_to_file(
-            f"{self.path}/{self.logs_dir}/{image_name}.csv",
-            "load_image;start;up_time;stop;remove_container;remove_image",
-            f"{load_image_time};{json.dumps(start_list)};{json.dumps(up_list)};{json.dumps(stop_list)};{json.dumps(remove_list)};{remove_image_time}"
-        )
+            execute_command(f"{self.software} stop {container_name}")
+            execute_command(f"{self.software} rm {container_name}")
 
     def stressload(self, container, max_stress_time):
         now = datetime.now()
         max_date = now + timedelta(seconds=max_stress_time)
+        execute_command(f"{self.software} load -i {self.path}/temp_{container['name']}.tar -q")
 
         while datetime.now() < max_date:
             exec_runs = random.randint(self.min_lifecycle_runs, self.max_lifecycle_runs)
@@ -225,11 +240,11 @@ class Environment:
             threads = []
             for index in range(exec_runs):
                 thread = threading.Thread(
-                    target=self.container_lifecycle,
+                    target=self.container_stressload,
                     name=container,
                     args=(
                         container["name"],
-                        container["host_port"],
+                        container["host_port"] + index + 1,
                         container["port"],
                         container["min_container_wait_time"],
                         container["max_container_wait_time"],
