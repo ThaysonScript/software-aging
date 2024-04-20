@@ -199,7 +199,7 @@ DOCKER_INSTALL() {
 
   newgrp docker & pid=$!; echo "subshell dead newgrp docker: $pid"; kill "$pid"; echo "pid is dead!"
 
-  docker run hello-world
+  docker --version
 }
 
 PODMAN_INSTALL_DEPENDENCIES() {
@@ -240,7 +240,7 @@ PODMAN_INSTALL() {
 
   pip install podman-compose
 
-  podman run docker.io/hello-world
+  podman --version
 }
 
 ADD_ROOT_PATH_PACKAGES() {
