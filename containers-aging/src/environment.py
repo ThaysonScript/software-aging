@@ -104,7 +104,7 @@ class Environment:
 
     def run(self):
         self.clean()
-        # self.start_teastore()
+        self.start_teastore()
         self.start_monitoring()
 
         now = datetime.now()
@@ -146,7 +146,7 @@ class Environment:
 
     def start_monitoring(self):
         print("Starting monitoring scripts")
-        # self.systemtap()
+        self.systemtap()
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
         monitoring_thread.daemon = True
         monitoring_thread.start()
