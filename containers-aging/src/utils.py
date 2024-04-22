@@ -4,6 +4,17 @@ import time
 
 
 def write_to_file(filename, header, content):
+    """
+    Write header and content to a file.
+
+    :param filename: The name of the file to write to.
+    :type filename: str
+    :param header: The header to write at the beginning of the file.
+    :type header: str
+    :param content: The content to append to the file.
+    :type content: str
+    :return: None
+    """
     with open(filename, "a+") as file:
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
@@ -13,6 +24,16 @@ def write_to_file(filename, header, content):
 
 
 def execute_command(command, informative=False, continue_if_error=False, error_informative=True) -> str:
+    """
+    Execute the given command.
+
+    :param command: The command to be executed.
+    :param informative: Optional. If True, the output of the command will be printed. Default is False.
+    :param continue_if_error: Optional. If True, the program will continue execution even if the command returns an error code. Default is False.
+    :param error_informative: Optional. If True, the error message will be printed if the command returns an error code. Default is True.
+    :return: The output of the command as a string.
+
+    """
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
     return_code = process.wait()
@@ -30,6 +51,12 @@ def execute_command(command, informative=False, continue_if_error=False, error_i
 
 
 def get_time(command) -> int:
+    """
+    Get the execution time of a command.
+
+    :param command: The command to be executed.
+    :return: The execution time of the command in nanoseconds.
+    """
     start_time = time.perf_counter_ns()
     execute_command(command)
     end_time = time.perf_counter_ns()
