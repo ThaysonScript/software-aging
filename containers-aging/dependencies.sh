@@ -86,7 +86,7 @@ INSTALL_DOCKER_DEBIAN_NEW() {
 INSTALL_PYTHON_DEPENDENCIES() {
   echo -e "installing python dependencies...."
 
-  apt install python3 python3-venv || {
+  apt install python3.11 python3.11-venv || {
     printf "%s\n" "Error: python install dependencies error!"
     exit 1
   }
