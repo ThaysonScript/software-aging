@@ -27,26 +27,26 @@ containers:
     version: "15.6"
     host_port: 5432
     port: 5432
-    min_container_wait_time: 3
-    max_container_wait_time: 5
+    min_container_wait_time: 1
+    max_container_wait_time: 10
 
   - name: redis
     version: "7.2.4"
     host_port: 6379
     port: 6379
-    min_container_wait_time: 2
-    max_container_wait_time: 3
+    min_container_wait_time: 1
+    max_container_wait_time: 10
 
   - name: rabbitmq
     version: "3.13.1"
     host_port: 5672
     port: 5672
-    min_container_wait_time: 7
-    max_container_wait_time: 8
+    min_container_wait_time: 1
+    max_container_wait_time: 10
 
   - name: nginx
     version: "1.22.1"
     host_port: 8085
     port: 80
     min_container_wait_time: 1
-    max_container_wait_time: 3
+    max_container_wait_time: 10
