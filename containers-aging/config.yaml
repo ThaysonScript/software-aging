@@ -2,7 +2,6 @@ general:
     runs: 5 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     software: "docker" # Use docker or podman
     images_server_folder: "192.168.1.109:/root/images" # Images server address and folder, please set up ssh without credentials access
-    run_only_monitoring: false
     old_software : false #used to creat logs folder
     system: "debian" #used to creat logs folder
     old_system: false #used to creat logs folder
