@@ -190,8 +190,10 @@ class EnvironmentConfig:
         general_config = config["general"]
         monitoring_config = config["monitoring"]
 
+        print(general_config, monitoring_config)
+
         monitoring_enviroment = MonitoringEnvironment(
-            path=general_config["path"],
+            path=general_config["scripts_folder"],
             sleep_time=monitoring_config["sleep_time"],
             software=general_config["software"],
             containers=config["containers"],
