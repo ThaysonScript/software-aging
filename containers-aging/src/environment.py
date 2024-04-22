@@ -89,7 +89,7 @@ class Environment:
         self.__print_progress_bar(self.runs, "Progress")
 
         print(f"\nEnded at {datetime.now()}")
-        #self.clear_containers_and_images()
+        # self.clear_containers_and_images()
 
     def start_teastore(self):
         print("Starting teastore")
@@ -187,8 +187,18 @@ class EnvironmentConfig:
         with open("config.yaml", "r") as yml_file:
             config = yaml.load(yml_file, Loader=yaml.FullLoader)
 
+        general_config = config["general"]
+        monitoring_config = config["monitoring"]
+
         monitoring_enviroment = MonitoringEnvironment(
-            **config["general"], **config["monitoring"], containers=config["containers"]
+            path=general_config["path"],
+            sleep_time=monitoring_config["sleep_time"],
+            software=general_config["software"],
+            containers=config["containers"],
+            sleep_time_container_metrics=monitoring_config["sleep_time_container_metrics"],
+            old_system=general_config["old_system"],
+            old_software=general_config["old_software"],
+            system=general_config["system"],
         )
 
         framework = Environment(
