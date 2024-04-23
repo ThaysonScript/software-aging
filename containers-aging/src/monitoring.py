@@ -67,10 +67,10 @@ class MonitoringEnvironment:
         processes = ["dockerd", "containerd"]
 
         for process in processes:
-            container_metrics_thread = threading.Thread(target=self.container_metrics,
-                                                        name="docker_processes" + process, args=process)
-            container_metrics_thread.daemon = True
-            container_metrics_thread.start()
+            process_thread = threading.Thread(target=self.container_metrics,
+                                              name="docker_processes" + process, args=process)
+            process_thread.daemon = True
+            process_thread.start()
 
     def get_process_data(self, process_name: str):
         date_time = current_time()
@@ -102,7 +102,7 @@ class MonitoringEnvironment:
     def process_monitoring_threads(self, process: str):
         while True:
             self.get_process_data(process)
-            time.sleep(self.sleep_time_container_metrics - 1)
+            time.sleep(self.sleep_time - 1)
 
     def start_podman_process_monitoring(self):
         # processes = ["dockerd", "containerd"]
