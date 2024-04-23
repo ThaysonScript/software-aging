@@ -1,20 +1,11 @@
 import threading
 import time
-from datetime import datetime
 
 from src.utils import (
     execute_command,
     write_to_file,
     get_time,
     current_time,
-    pid_command,
-    process_data,
-    process_threads,
-    process_cpu, 
-    process_mem,
-    process_rss,
-    process_vsz,
-    process_swap
 )
 
 
@@ -52,7 +43,10 @@ class MonitoringEnvironment:
         print("Starting monitoring scripts")
         self.start_systemtap()
         self.start_container_lifecycle_monitoring()
-        self.start_monitoring_container_process()          # containers
+        if self.software == "docker":
+            self.start_docker_process_monitoring()
+        elif self.software == "podman":
+            self.start_podman_process_monitoring()
         self.start_machine_resources_monitoring()
 
     def start_systemtap(self):
@@ -69,11 +63,56 @@ class MonitoringEnvironment:
         container_metrics_thread.daemon = True
         container_metrics_thread.start()
 
-    def start_monitoring_container_process(self):
-        docker_monitoring_thread = threading.Thread(target=self.containers_monitoring, name="containers_monitoring")
-        docker_monitoring_thread.daemon = True
-        docker_monitoring_thread.start()
+    def start_docker_process_monitoring(self):
+        processes = ["dockerd", "containerd"]
 
+        for process in processes:
+            container_metrics_thread = threading.Thread(target=self.container_metrics,
+                                                        name="docker_processes" + process, args=process)
+            container_metrics_thread.daemon = True
+            container_metrics_thread.start()
+
+    def get_process_data(self, process_name: str):
+        date_time = current_time()
+        pid = execute_command(f'pidof -s {process_name}')
+
+        if pid:
+            data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+
+            threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
+                                      continue_if_error=True)
+            cpu = data[7]
+            mem = data[13]
+            rss = data[12]
+            vsz = data[11]
+            swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'", continue_if_error=True)
+
+            write_to_file(
+                f'{self.path}/{self.log_dir}/{process_name}.csv',
+                'cpu;mem;rss;vsz;threads;swap;date_time',
+                f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
+            )
+        else:
+            write_to_file(
+                f'{self.path}/{self.log_dir}/{process_name}.csv',
+                'cpu;mem;rss;vsz;threads;swap;date_time',
+                f'0;0;0;0;0;0;{date_time}'
+            )
+
+    def process_monitoring_threads(self, process: str):
+        while True:
+            self.get_process_data(process)
+            time.sleep(self.sleep_time_container_metrics - 1)
+
+    def start_podman_process_monitoring(self):
+        # processes = ["dockerd", "containerd"]
+        # Só escolher os processos acima já deve funcionar
+        # for process in processes:
+        #     container_metrics_thread = threading.Thread(target=self.container_metrics,
+        #                                                 name="podman_processes" + process, args=process)
+        #     container_metrics_thread.daemon = True
+        #     container_metrics_thread.start()
+        return
 
     def start_machine_resources_monitoring(self):
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
@@ -82,6 +121,7 @@ class MonitoringEnvironment:
 
     def container_lifecycle(self):
         for container in self.containers:
+            date_time = current_time()
             container_name = container["name"]
             host_port = container["host_port"]
             container_port = container["port"]
@@ -108,14 +148,13 @@ class MonitoringEnvironment:
 
             write_to_file(
                 f"{self.path}/{self.log_dir}/{container_name}.csv",
-                "load_image;start;up_time;stop;remove_container;remove_image",
-                f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time}"
+                "load_image;start;up_time;stop;remove_container;remove_image;date_time",
+                f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
             )
 
     def machine_resources(self):
         while True:
-            now = datetime.now()
-            date_time = now.strftime("%Y-%m-%d %H:%M:%S")
+            date_time = current_time()
             self.cpu_monitoring(date_time)
             self.disk_monitoring(date_time)
             self.memory_monitoring(date_time)
@@ -171,65 +210,3 @@ class MonitoringEnvironment:
             "zombies;time",
             f"{zombies};{date_time}"
         )
-        
-    def dockerd_process(self):
-        dockerd_pid = pid_command('dockerd')
-        date_time = current_time()
-        
-        if dockerd_pid:
-            dockerd_data = process_data(dockerd_pid)
-            
-            dockerd_threads = process_threads(dockerd_pid)
-            dockerd_cpu = process_cpu(dockerd_data)
-            dockerd_mem = process_mem(dockerd_data)
-            dockerd_rss = process_rss(dockerd_data)
-            dockerd_vsz = process_vsz(dockerd_data)
-            dockerd_swap =  process_swap(dockerd_pid)
-            
-            write_to_file(
-                f'{self.path}/{self.log_dir}/dockerd.csv',
-                'cpu;mem;rss;vsz;threads;swap;date_time',
-                f'{dockerd_cpu};{dockerd_mem};{dockerd_rss};{dockerd_vsz};{dockerd_threads};{dockerd_swap};{date_time}'
-            )
-            
-        else:
-            time.sleep(5)   
-            execute_command(f'echo "0;0;0;0;0;0;0" >> {self.path}/{self.log_dir}/dockerd.csv')
-            
-            
-    def containerd_process(self):
-        containerd_pid = pid_command('containerd')
-        date_time = current_time()
-        
-        if containerd_pid:
-            containerd_data = process_data(containerd_pid)
-            
-            containerd_threads = process_threads(containerd_pid)
-            containerd_cpu = process_cpu(containerd_data)
-            containerd_mem = process_mem(containerd_data)
-            containerd_rss = process_rss(containerd_data)
-            containerd_vsz = process_vsz(containerd_data)
-            containerd_swap = process_swap(containerd_pid)
-            
-            write_to_file(
-                f'{self.path}/{self.log_dir}/containerd.csv',
-                'cpu;mem;rss;vsz;threads;swap;date_time',
-                f'{containerd_cpu};{containerd_mem};{containerd_rss};{containerd_vsz};{containerd_threads};{containerd_swap};{date_time}'
-            )
-            
-        else:
-            time.sleep(5)   
-            execute_command(f'echo "0;0;0;0;0;0;0" >> {self.path}/{self.log_dir}/containerd.csv')
-            
-    def docker(self):
-        self.dockerd_process()
-        self.containerd_process()
-        
-    def podman(self):
-        pass
-
-    def containers_monitoring(self):
-        while True:
-            self.docker()
-            self.podman()
-            time.sleep(self.sleep_time)

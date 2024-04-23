@@ -7,7 +7,7 @@ import yaml
 import random
 
 from src.monitoring import MonitoringEnvironment
-from src.utils import execute_command
+from src.utils import execute_command, write_to_file, current_time
 
 
 class Environment:
@@ -83,7 +83,17 @@ class Environment:
 
         for current_run in range(self.runs):
             self.__print_progress_bar(current_run, "Progress")
+            write_to_file(
+                f"{self.path}/{self.logs_dir}/runs.csv",
+                "event;date_time",
+                f"sleep;{current_time()}"
+            )
             time.sleep(self.wait_after_stress)
+            write_to_file(
+                f"{self.path}/{self.logs_dir}/runs.csv",
+                "event;date_time",
+                f"stress;{current_time()}"
+            )
             self.init_containers_threads(self.max_stress_time)
 
         self.__print_progress_bar(self.runs, "Progress")

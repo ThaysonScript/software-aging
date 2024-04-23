@@ -1,15 +1,14 @@
 general:
     runs: 5 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     software: "docker" # Use docker or podman
-    images_server_folder: "192.168.1.109:/root/images" # Images server address and folder, please set up ssh without credentials access
     old_software : false #used to creat logs folder
     system: "debian" #used to creat logs folder
     old_system: false #used to creat logs folder
-    scripts_folder: "/home/cup/software-aging/containers-aging"
+    scripts_folder: "/root/software-aging/containers-aging"
 
 monitoring:
-    sleep_time: 30  # Sleep time the machine data will be collected in seconds
-    sleep_time_container_metrics: 30  # Sleep time the machine data will be collected in seconds
+    sleep_time: 60  # Sleep time the machine data will be collected in seconds
+    sleep_time_container_metrics: 60  # Sleep time the machine data will be collected in seconds
 
 stressload:
     max_stress_time: 180  # Time the stress will be running in seconds (default 259200s = 3 days)
