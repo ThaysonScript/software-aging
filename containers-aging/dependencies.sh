@@ -91,7 +91,7 @@ INSTALL_PYTHON_DEPENDENCIES() {
     exit 1
   }
 
-  python3 -m venv env
+  python3.11 -m venv env
 
   source env/bin/activate
 
