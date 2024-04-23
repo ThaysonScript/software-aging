@@ -67,7 +67,7 @@ class MonitoringEnvironment:
         processes = ["dockerd", "containerd"]
 
         for process in processes:
-            process_thread = threading.Thread(target=self.container_metrics,
+            process_thread = threading.Thread(target=self.process_monitoring_thread,
                                               name="docker_processes" + process, args=process)
             process_thread.daemon = True
             process_thread.start()
@@ -77,7 +77,8 @@ class MonitoringEnvironment:
         pid = execute_command(f'pidof -s {process_name}')
 
         if pid:
-            data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+            original_data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'")
+            data = original_data.split()
 
             threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
                                       continue_if_error=True)
@@ -87,6 +88,8 @@ class MonitoringEnvironment:
             vsz = data[11]
             swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'", continue_if_error=True)
 
+            print(original_data)
+            print(cpu, mem, rss, vsz, swap)
             write_to_file(
                 f'{self.path}/{self.log_dir}/{process_name}.csv',
                 'cpu;mem;rss;vsz;threads;swap;date_time',
@@ -99,7 +102,7 @@ class MonitoringEnvironment:
                 f'0;0;0;0;0;0;{date_time}'
             )
 
-    def process_monitoring_threads(self, process: str):
+    def process_monitoring_thread(self, process: str):
         while True:
             self.get_process_data(process)
             time.sleep(self.sleep_time - 1)

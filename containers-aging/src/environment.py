@@ -59,14 +59,14 @@ class Environment:
 
     def clear(self):
         print("Cleaning old logs and containers")
-        execute_command(f"rm -rf {self.path}/{self.logs_dir}", continue_if_error=True)
-        execute_command(f"mkdir {self.path}/{self.logs_dir}", continue_if_error=True)
+        execute_command(f"rm -rf {self.path}/{self.logs_dir}", continue_if_error=True, error_informative=False)
+        execute_command(f"mkdir {self.path}/{self.logs_dir}", continue_if_error=True, error_informative=False)
         self.clear_containers_and_images()
 
     def clear_containers_and_images(self):
-        execute_command(f"{self.software} stop $({self.software} ps -aq)", continue_if_error=True)
-        execute_command(f"{self.software} rm $({self.software} ps -aq)", continue_if_error=True)
-        execute_command(f"{self.software} rmi $({self.software} image ls -aq)", continue_if_error=True)
+        execute_command(f"{self.software} stop $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} rm $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} rmi $({self.software} image ls -aq)", continue_if_error=True, error_informative=False)
 
     def run(self):
         self.clear()
@@ -197,8 +197,6 @@ class EnvironmentConfig:
 
         general_config = config["general"]
         monitoring_config = config["monitoring"]
-
-        print(general_config, monitoring_config)
 
         monitoring_enviroment = MonitoringEnvironment(
             path=general_config["scripts_folder"],
