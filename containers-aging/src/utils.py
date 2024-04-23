@@ -1,6 +1,36 @@
 import os
 import subprocess
 import time
+from datetime import datetime
+
+
+def pid_command(process):
+    return execute_command(f'pidof -s {process}')
+
+def process_data(pid):
+    return [execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'")]
+
+def process_threads(pid):
+    return execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'")
+
+def process_cpu(data):
+    return execute_command(f"echo '{data}' | awk '{{print $8}}'")
+
+def process_mem(data):
+    return execute_command(f"echo '{data}' | awk '{{print $14}}'")
+
+def process_rss(data):
+    return execute_command(f"echo '{data}' | awk '{{print $13}}'")
+
+def process_vsz(data):
+    return execute_command(f"echo '{data}' | awk '{{print $12}}'")
+
+def process_swap(pid):
+    return execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'")
+
+def current_time():
+    now = datetime.now()
+    return now.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def write_to_file(filename, header, content):
