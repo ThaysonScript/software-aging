@@ -16,7 +16,6 @@ class Environment:
             containers: list,
             sleep_time: int,
             software: str,
-            images_server_folder: str,
             max_stress_time: int,
             wait_after_stress: int,
             runs: int,
@@ -48,7 +47,6 @@ class Environment:
         self.path = scripts_folder
         self.sleep_time = sleep_time
         self.software = software
-        self.images_server_folder = images_server_folder
         self.max_stress_time = max_stress_time
         self.wait_after_stress = wait_after_stress
         self.runs = runs
