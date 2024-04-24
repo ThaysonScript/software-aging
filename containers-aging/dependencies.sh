@@ -93,6 +93,8 @@ INSTALL_PYTHON_DEPENDENCIES() {
 
   python3.11 -m venv env
 
+  echo "export PATH=\$PATH:/root/podman/bin" >> env/bin/activate
+
   source env/bin/activate
 
   pip install PyYAML
@@ -219,7 +221,7 @@ PODMAN_INSTALL_DEPENDENCIES() {
 EOF
   fi
 
-  apt install git gcc make curl wget pkg-config conmon crun containernetworking-plugins iptables -y
+  apt install catatonit git gcc make curl wget pkg-config conmon crun containernetworking-plugins iptables -y
   apt install -y libsystemd-dev libgpgme-dev libseccomp-dev -y
 
   wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz

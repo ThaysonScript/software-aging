@@ -1,12 +1,12 @@
 // GLOBAL VARIABLES
 global alloc, fallback, fragmenting = 0, index = 0
-global who[100]
+global who[400]
 
 
 // Probe triggered on memory allocation events, maintaining a record of processes occurrences
 probe kernel.trace("mm_page_alloc_extfrag"){	
 	if(who[execname(),pid(),pexecname(),ppid(),uid()] == 0){
-		if(index == 100){  //checks if the array is full
+		if(index == 400){  //checks if the array is full
 			index = 0
 			print_processes()
 			delete who

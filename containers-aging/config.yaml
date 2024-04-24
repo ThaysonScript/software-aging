@@ -30,7 +30,7 @@ containers:
 
   - name: redis
     version: "7.2.4"
-    host_port: 6379
+    host_port: 6380
     port: 6379
     min_container_wait_time: 1
     max_container_wait_time: 10
