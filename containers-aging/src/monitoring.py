@@ -74,30 +74,32 @@ class MonitoringEnvironment:
 
     def get_process_data(self, process_name: str):
         date_time = current_time()
-        pid = execute_command(f'pidof -s {process_name}')
 
-        if pid:
-            data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+        data = []
 
-            threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
-                                      continue_if_error=True)
-            cpu = data[7]
-            mem = data[13]
-            rss = data[12]
-            vsz = data[11]
-            swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'", continue_if_error=True)
+        while len(data) == 0:
+            try:
+                pid = execute_command(f'pidof -s {process_name}')
 
-            write_to_file(
-                f'{self.path}/{self.log_dir}/{process_name}.csv',
-                'cpu;mem;rss;vsz;threads;swap;date_time',
-                f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
-            )
-        else:
-            write_to_file(
-                f'{self.path}/{self.log_dir}/{process_name}.csv',
-                'cpu;mem;rss;vsz;threads;swap;date_time',
-                f'0;0;0;0;0;0;{date_time}'
-            )
+                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+
+                threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
+                                          continue_if_error=True)
+                swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
+                                       continue_if_error=True)
+
+                cpu = data[7]
+                mem = data[13]
+                rss = data[12]
+                vsz = data[11]
+
+                write_to_file(
+                    f'{self.path}/{self.log_dir}/{process_name}.csv',
+                    'cpu;mem;rss;vsz;threads;swap;date_time',
+                    f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
+                )
+            except:
+                continue
 
     def process_monitoring_thread(self, process: str):
         while True:
