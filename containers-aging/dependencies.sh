@@ -9,36 +9,9 @@ readonly SYSTEM_VERSION="$VERSION_ID"
 
 KERNEL_VERSION=$(uname -r)
 
-if [ "$DISTRO_ID" == "ubuntu" ]; then
-  echo "por favor, em questao de uso do ubuntu caso não tenha movido a pasta do projeto para o dir /root/ faca isso e execute a partir do /root/!"
-
-  read -r -p "moveu a pasta software-aging para o diretorio /root/ [s]/[n]" correto
-  if [ "$correto" == "n" ]; then
-    echo "mova para /root/"
-    exit 1
-  fi
-fi
-
-IF_DISTRO_UBUNTU() {
-if [ "$DISTRO_ID" == "ubuntu" ]; then
-  echo "por padrao voce precisa logar como root para distro ubuntu server"
-  echo "isto é necessário para obter caminhos de variaveis definidas sempre a nível de user root"
-  echo "não se preocupe, quando a maquina for rebootada esta senha sera removida"
-
-  printf "\n%s\n" "Adicione uma nova senha para o user root abaixo: "
-  passwd root
-
-  echo "pronto! Faça login como root e execute novamente sem selecionar esta opcao" && exit 0
-else
-  echo "sua distro nao e ubuntu! Saindo....." && exit 1
-
-fi
-
-}
-
 ADD_UBUNTU_DOCKER_REPOSITORY() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu" \
-  "$DISTRO_CODENAME stable" > /etc/apt/sources.list.d/docker.list
+  "jammy stable" > /etc/apt/sources.list.d/docker.list
 
   apt update
 }
@@ -51,7 +24,7 @@ ADD_DEBIAN_DOCKER_REPOSITORY() {
 INSTALL_DOCKER_UBUNTU_OLD() {
   ADD_UBUNTU_DOCKER_REPOSITORY
 
-  VERSION_STRING="5:20.10.13~3-0~ubuntu-$DISTRO_CODENAME"
+  VERSION_STRING="5:20.10.13~3-0~ubuntu-jammy"
   apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
 
 }
@@ -251,12 +224,6 @@ ADD_ROOT_PATH_PACKAGES() {
   echo "export PATH=\$PATH:/root/podman/bin" >>"/root/".bashrc
 }
 
-ADD_HOME_PATH_PACKAGES() {
-  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"/home/$(logname)/".bashrc
-  echo "export PATH=\$PATH:/usr/local/go/bin" >>"/home/$(logname)/".bashrc
-  echo "export PATH=\$PATH:/home/$(logname)/podman/bin" >>"/home/$(logname)/".bashrc
-}
-
 MAIN() {
   reset
 
@@ -292,28 +259,21 @@ MAIN() {
 reset
 printf "%s\n" "vai usar ubuntu e/ou diretorio root, home ou já configurou as paths no .bashrc?"
 printf "%s\n" "Configurar Paths no dir root - [1]"
-printf "%s\n" "Configurar Paths no dir home - [2]"
-printf "%s\n" "Diretorio Configurado (prosseguir instalação) - [3]"
-printf "%s\n" "Execute esta opcao ( primeiro ) caso esteja usando distro ubuntu - [4]"
-printf "%s\n" "Sair - [5]"
+printf "%s\n" "Diretorio Configurado (prosseguir instalação) - [2]"
+printf "%s\n" "Sair - [3]"
 
 read -r -p "choice: " diretorio
 if [ "$diretorio" -eq 1 ]; then
   ADD_ROOT_PATH_PACKAGES && echo "faca: ( source /root/.bashrc ) e execute novamente o mesmo codigo digitando a opção [3] ou [4]" && exit 0
 
 elif [ "$diretorio" -eq 2 ]; then
-  ADD_HOME_PATH_PACKAGES && echo "faca: ( source /home/$(logname)/.bashrc ) e execute novamente o mesmo codigo digitando a opção [3] ou [4]" && exit 0
-
-elif [ "$diretorio" -eq 3 ]; then
-  if [ "$DISTRO_ID" == "ubuntu" ]; then
-    [[ "$(pwd)" != "/root" ]] && echo "execute a pasta a partir do diretorio /root" && exit 1
-  fi
+  printf "%s\n" "Verifique se as paths estão no diretorio /root arquivo .bashrc e execute com a pasta software-aging no dir /root"
+  printf "%s\n" "Caso esteja no ubuntu tambem crie um acesso para usuario root com ( sudo passwd root ) "
   MAIN
 
-elif [ "$diretorio" -eq 4 ]; then
-  IF_DISTRO_UBUNTU
-
-else
+elif [ "$diretorio" -eq 3 ]; then
   echo "saindo....." && exit 0
 
+else
+  echo "error in install dependencies" && exit 1
 fi
