@@ -1,2 +1,10 @@
 debian-12.5.0-amd64-netinst.iso
+nginx.tar
+postgres.tar
+rabbitmq.tar
+redis.tar
+temp_nginx.tar
+temp_postgres.tar
+temp_rabbitmq.tar
+temp_redis.tar
 .venv
