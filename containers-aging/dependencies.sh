@@ -131,17 +131,15 @@ INSTALL_LIBRARIES_FOR_MONITORING() {
     apt install gnupg curl wget sysstat systemtap -y
 
     if [ "$DISTRO_ID" == "ubuntu" ]; then
-      apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622 
+       apt install ubuntu-dbgsym-keyring -y && {
+        echo "deb http://ddebs.ubuntu.com $DISTRO_CODENAME main restricted universe multiverse
+        deb http://ddebs.ubuntu.com $DISTRO_CODENAME-updates main restricted universe multiverse
+        deb http://ddebs.ubuntu.com $DISTRO_CODENAME-proposed main restricted universe multiverse" > "/etc/apt/sources.list.d/ddebs.list"
 
-      codename=$(lsb_release -c | awk  '{print $2}')
-      tee /etc/apt/sources.list.d/ddebs.list << EOF
-deb http://ddebs.ubuntu.com/ ${codename}      main restricted universe multiverse
-deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
-deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
-EOF
+        apt update
+      }
 
-      apt-get update
-      apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbgsym -y
+      apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbgsym gcc -y
 
     else
       apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbg -y
