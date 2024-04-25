@@ -32,7 +32,7 @@ INSTALL_DOCKER_UBUNTU_OLD() {
 INSTALL_DOCKER_UBUNTU_NEW() {
   ADD_UBUNTU_DOCKER_REPOSITORY
 
-  VERSION_STRING="5:26.0.1-1~ubuntu.$SYSTEM_VERSION~$DISTRO_CODENAME"
+  VERSION_STRING="5:26.0.1-1~ubuntu.22.04~jammy"
   apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
 }
 
