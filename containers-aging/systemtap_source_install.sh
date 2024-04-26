@@ -50,6 +50,7 @@ RUNNING_SMALL_SYSTEMTAP_TEST() {
 }
 
 MAIN() {
+    reset
     GET_SYSTEMTAP_SOURCE
 
     # shellcheck disable=SC2317

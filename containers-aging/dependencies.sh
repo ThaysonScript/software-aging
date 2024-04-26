@@ -257,10 +257,11 @@ MAIN() {
 }
 
 reset
-printf "%s\n" "vai usar ubuntu e/ou diretorio root, home ou já configurou as paths no .bashrc?"
+printf "%s\n" "Já configurou as paths no .bashrc?"
 printf "%s\n" "Configurar Paths no dir root - [1]"
 printf "%s\n" "Diretorio Configurado (prosseguir instalação) - [2]"
-printf "%s\n" "Sair - [3]"
+printf "%s\n" "Get install systemtap for source code? - [3]"
+printf "%s\n" "Sair - [4]"
 
 read -r -p "choice: " diretorio
 if [ "$diretorio" -eq 1 ]; then
@@ -272,6 +273,9 @@ elif [ "$diretorio" -eq 2 ]; then
   MAIN
 
 elif [ "$diretorio" -eq 3 ]; then
+  source ./systemtap_source_install.sh
+  
+elif [ "$diretorio" -eq 4 ]; then
   echo "saindo....." && exit 0
 
 else
