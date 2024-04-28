@@ -64,7 +64,7 @@ class MonitoringEnvironment:
         container_metrics_thread.start()
 
     def start_docker_process_monitoring(self):
-        processes = ["dockerd", "containerd"]
+        processes = ["docker", "dockerd", "containerd", "java", "containerd-shim"]
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
@@ -79,7 +79,7 @@ class MonitoringEnvironment:
 
         while len(data) == 0:
             try:
-                pid = execute_command(f'pidof -s {process_name}')
+                pid = execute_command(f'pgrep -f {process_name} | head -n 1')
 
                 data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
 
@@ -107,14 +107,13 @@ class MonitoringEnvironment:
             time.sleep(self.sleep_time - 1)
 
     def start_podman_process_monitoring(self):
-        # processes = ["dockerd", "containerd"]
-        # Só escolher os processos acima já deve funcionar
-        # for process in processes:
-        #     container_metrics_thread = threading.Thread(target=self.container_metrics,
-        #                                                 name="podman_processes" + process, args=process)
-        #     container_metrics_thread.daemon = True
-        #     container_metrics_thread.start()
-        return
+        processes = ["podman", "java", "conmon"]
+
+        for process in processes:
+            process_thread = threading.Thread(target=self.process_monitoring_thread,
+                                              name="podman_processes" + process, args=(process,))
+            process_thread.daemon = True
+            process_thread.start()
 
     def start_machine_resources_monitoring(self):
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
