@@ -163,9 +163,11 @@ class MonitoringEnvironment:
             time.sleep(self.sleep_time)
 
     def container_metrics(self):
+        self.container_lifecycle()
+
         while True:
-            self.container_lifecycle()
             time.sleep(self.sleep_time_container_metrics)
+            self.container_lifecycle()
 
     def disk_monitoring(self, date_time):
         comando = "df | grep '/$' | awk '{print $3}'"

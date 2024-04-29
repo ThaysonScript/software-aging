@@ -7,62 +7,34 @@ readonly DISTRO_ID="$ID"
 readonly DISTRO_CODENAME="$VERSION_CODENAME"
 readonly SYSTEM_VERSION="$VERSION_ID"
 
+export PATH=$PATH:/usr/local/go/bin
+export PKG_CONFIG_PATH=/usr/lib/pkgconfig
+
 KERNEL_VERSION=$(uname -r)
+BASE_DIR=$(pwd)
+
+RESET_TO_ORIGINAL_DIR() {
+  cd "$BASE_DIR" || exit 1
+}
 
 ADD_UBUNTU_DOCKER_REPOSITORY() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu" \
   "jammy stable" > /etc/apt/sources.list.d/docker.list
 
-  apt update
-}
-
-ADD_DEBIAN_DOCKER_REPOSITORY() {
-  tee /etc/apt/sources.list.d/docker.list >/dev/null
   apt-get update
 }
 
-INSTALL_DOCKER_UBUNTU_OLD() {
-  ADD_UBUNTU_DOCKER_REPOSITORY
-
-  VERSION_STRING="5:20.10.13~3-0~ubuntu-jammy"
-  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
-
-}
-
-INSTALL_DOCKER_UBUNTU_NEW() {
-  ADD_UBUNTU_DOCKER_REPOSITORY
-
-  VERSION_STRING="5:26.0.1-1~ubuntu.22.04~jammy"
-  apt install docker-ce="$VERSION_STRING" docker-ce-cli="$VERSION_STRING" containerd.io docker-buildx-plugin docker-compose-plugin
-}
-
-INSTALL_DOCKER_DEBIAN_OLD() {
+ADD_DEBIAN_DOCKER_REPOSITORY() {
   echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-  bullseye stable" |
-    ADD_DEBIAN_DOCKER_REPOSITORY
-
-  VERSION_STRING="5:20.10.13~3-0~debian-bullseye"
-  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
-}
-
-INSTALL_DOCKER_DEBIAN_NEW() {
-  echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-  bullseye stable" |
-    ADD_DEBIAN_DOCKER_REPOSITORY
-
-  VERSION_STRING="5:26.0.1-1~debian.11~bullseye"
-  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
+  bullseye stable" >> /etc/apt/sources.list.d/docker.list
+  apt-get update
 }
 
 INSTALL_PYTHON_DEPENDENCIES() {
   echo -e "installing python dependencies...."
 
-  apt install python3.11 python3.11-venv || {
-    printf "%s\n" "Error: python install dependencies error!"
-    exit 1
-  }
+  apt install python3.11 python3.11-venv
 
   python3.11 -m venv env
 
@@ -103,7 +75,7 @@ INSTALL_LIBRARIES_FOR_MONITORING() {
 
   read -r -p "choice: " choice
   if [ "$choice" -eq 1 ]; then
-    apt install gnupg curl wget sysstat systemtap -y
+    apt install gnupg curl wget sysstat -y
 
     if [ "$DISTRO_ID" == "ubuntu" ]; then
        apt install ubuntu-dbgsym-keyring -y && {
@@ -123,19 +95,26 @@ INSTALL_LIBRARIES_FOR_MONITORING() {
 
     cp /proc/kallsyms /boot/System.map-"$KERNEL_VERSION"
 
+    COMPILE_SYSTEMTAP
+
   else
     echo -e "not installing library monitoring dependencies!"
   fi
 }
 
-INSTALL_DOCKER_DEPENDENCIES() {
+INSTALL_DOCKER(){
+  VERSION_STRING=$1
+  apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
+}
+
+DOCKER() {
   apt install ca-certificates curl
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   chmod a+r /etc/apt/keyrings/docker.asc
-}
 
-DOCKER_INSTALL() {
+  reset
+
   printf "\n%s\n" "Do you want to install the new version or old version of docker?"
   printf "%s\n" "new version - [1]"
   printf "%s\n" "old version - [2]"
@@ -145,22 +124,26 @@ DOCKER_INSTALL() {
   if [ "$version_choice" -eq 1 ]; then
     case $DISTRO_ID in
     "ubuntu")
-      INSTALL_DOCKER_UBUNTU_NEW
+      ADD_UBUNTU_DOCKER_REPOSITORY
+      INSTALL_DOCKER "5:26.0.1-1~ubuntu.22.04~jammy"
       ;;
 
     "debian")
-      INSTALL_DOCKER_DEBIAN_NEW
+      ADD_DEBIAN_DOCKER_REPOSITORY
+      INSTALL_DOCKER "5:26.0.1-1~debian.11~bullseye"
       ;;
     esac
 
   elif [ "$version_choice" -eq 2 ]; then
     case $DISTRO_ID in
     "ubuntu")
-      INSTALL_DOCKER_UBUNTU_OLD
+      ADD_UBUNTU_DOCKER_REPOSITORY
+      INSTALL_DOCKER "5:20.10.13~3-0~ubuntu-jammy"
       ;;
 
     "debian")
-      INSTALL_DOCKER_DEBIAN_OLD
+      ADD_DEBIAN_DOCKER_REPOSITORY
+      INSTALL_DOCKER "5:20.10.13~3-0~debian-bullseye"
       ;;
     esac
 
@@ -169,15 +152,11 @@ DOCKER_INSTALL() {
 
   fi
 
-  groupadd docker
-  usermod -aG docker "$USER"
-
-  newgrp docker & pid=$!; echo "subshell dead newgrp docker: $pid"; kill "$pid"; echo "pid is dead!"
-
   docker --version
 }
 
-PODMAN_INSTALL_DEPENDENCIES() {
+COMPILE_PODMAN() {
+  #SETTINGS
   mkdir -p /etc/containers
 
   if [ ! -f "/etc/containers/policy.json" ]; then
@@ -199,85 +178,49 @@ EOF
 
   wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
   rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
-}
 
-PODMAN_INSTALL() {
-  echo "Installing Podman..."
-
+  #COMPILE
+  cd /root || exit
   git clone https://github.com/containers/podman.git
-
   cd podman || exit 1
-
   git checkout v4.9
-
   make install.tools
   make binaries
-
-  pip install podman-compose
-
+  export PATH=$PATH:/root/podman/bin
+  echo "export PATH=\$PATH:/root/podman/bin" >> "/root/.bashrc"
+  echo "export PATH=\$PATH:/root/podman/bin" >> "$BASE_DIR/env/bin/activate"
   podman --version
+  RESET_TO_ORIGINAL_DIR
 }
 
-ADD_ROOT_PATH_PACKAGES() {
-  echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig" >>"/root/".bashrc
-  echo "export PATH=\$PATH:/usr/local/go/bin" >>"/root/".bashrc
-  echo "export PATH=\$PATH:/root/podman/bin" >>"/root/".bashrc
+COMPILE_SYSTEMTAP() {
+    cd /root || exit
+    apt install git gcc g++ build-essential zlib1g-dev elfutils libdw-dev gettext -y
+    git clone "git://sourceware.org/git/systemtap.git"
+    cd "systemtap" || exit
+    ./configure
+    make clean
+    make all
+    make install
+    RESET_TO_ORIGINAL_DIR
 }
 
-MAIN() {
-  reset
+INSTALL_QEMU_KVM_DEPENDENCIES
+INSTALL_PYTHON_DEPENDENCIES
+INSTALL_LIBRARIES_FOR_MONITORING
 
-  INSTALL_QEMU_KVM_DEPENDENCIES
-  INSTALL_PYTHON_DEPENDENCIES
-  INSTALL_LIBRARIES_FOR_MONITORING
+printf "%s\n" "Which service are you using?"
+printf "%s\n" "Docker - [1]"
+printf "%s\n" "Podman - [2]"
+printf "%s\n" "None - [Another Keyboard]"
 
-  printf "%s\n" "Which service are you using?"
-  printf "%s\n" "Docker - [1]"
-  printf "%s\n" "Podman - [2]"
-  printf "%s\n" "None - [Another Keyboard]"
+read -r -p "choice: " service
+if [ "$service" -eq 1 ]; then
+  DOCKER
 
-  read -r -p "choice: " service
-  if [ "$service" -eq 1 ]; then
-    INSTALL_DOCKER_DEPENDENCIES
-    DOCKER_INSTALL
-
-  elif [ "$service" -eq 2 ]; then
-    PODMAN_INSTALL_DEPENDENCIES
-    PODMAN_INSTALL
-
-  else
-    echo "Invalid option or none option selection, exiting..."
-    exit 1
-  fi
-
-  printf "%s\n" "autoremoving packages not necessary"
-  apt autoremove -y
-
-  echo "Finished and venv is active, change the config.yaml file"
-}
-
-reset
-printf "%s\n" "Já configurou as paths no .bashrc?"
-printf "%s\n" "Configurar Paths no dir root - [1]"
-printf "%s\n" "Diretorio Configurado (prosseguir instalação) - [2]"
-printf "%s\n" "Get install systemtap for source code? - [3]"
-printf "%s\n" "Sair - [4]"
-
-read -r -p "choice: " diretorio
-if [ "$diretorio" -eq 1 ]; then
-  ADD_ROOT_PATH_PACKAGES && echo "faca: ( source /root/.bashrc ) e execute novamente o mesmo codigo digitando a opção [3] ou [4]" && exit 0
-
-elif [ "$diretorio" -eq 2 ]; then
-  printf "%s\n" "Verifique se as paths estão no diretorio /root arquivo .bashrc e execute com a pasta software-aging no dir /root"
-  printf "%s\n" "Caso esteja no ubuntu tambem crie um acesso para usuario root com ( sudo passwd root ) "
-  MAIN
-
-elif [ "$diretorio" -eq 3 ]; then
-  source ./systemtap_source_install.sh
-  
-elif [ "$diretorio" -eq 4 ]; then
-  echo "saindo....." && exit 0
-
-else
-  echo "error in install dependencies" && exit 1
+elif [ "$service" -eq 2 ]; then
+  COMPILE_PODMAN
 fi
+
+apt autoremove -y
+chmod a+wrx start_teastore.sh

@@ -67,6 +67,7 @@ class Environment:
         execute_command(f"{self.software} stop $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
         execute_command(f"{self.software} rm $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
         execute_command(f"{self.software} rmi $({self.software} image ls -aq)", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} system prune -a -f)", continue_if_error=True, error_informative=False)
 
     def run(self):
         self.clear()
@@ -102,10 +103,7 @@ class Environment:
     def start_teastore(self):
         print("Starting teastore")
 
-        if self.software == "docker":
-            command = f"docker compose -f {self.path}/docker-compose.yaml up -d --quiet-pull"
-        else:
-            command = f"podman-compose -f {self.path}/docker-compose.yaml up -d --quiet-pull"
+        command = f"{self.path}/start_teastore.sh {self.software}"
         execute_command(command, informative=True, error_informative=True)
 
     def init_containers_threads(self, max_stress_time):
