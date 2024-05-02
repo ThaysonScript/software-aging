@@ -162,12 +162,25 @@ class MonitoringEnvironment:
             self.process_monitoring(date_time)
             time.sleep(self.sleep_time)
 
+
     def container_metrics(self):
+        start_time = time.time()
         self.container_lifecycle()
+        end_time = time.time()
+
+        time_taken = end_time - start_time
+        sleep_time = self.sleep_time_container_metrics - time_taken
 
         while True:
-            time.sleep(self.sleep_time_container_metrics)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+            start_time = time.time()
             self.container_lifecycle()
+            end_time = time.time()
+
+            time_taken = end_time - start_time
+            sleep_time = self.sleep_time_container_metrics - time_taken
+
 
     def disk_monitoring(self, date_time):
         comando = "df | grep '/$' | awk '{print $3}'"
