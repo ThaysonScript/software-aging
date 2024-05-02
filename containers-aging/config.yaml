@@ -8,7 +8,7 @@ general:
 
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
-    sleep_time_container_metrics: 60  # Sleep time the machine data will be collected in seconds
+    sleep_time_container_metrics: 180  # Sleep time the machine data will be collected in seconds
 
 stressload:
     max_stress_time: 180  # Time the stress will be running in seconds (default 259200s = 3 days)

@@ -10,8 +10,16 @@ $software run -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_N
 
 $software run -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=2222" -p 2222:8080 -d --restart=always docker.io/descartesresearch/teastore-auth
 
-$software run -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=3333" -p 3333:8080 -d --restart=always docker.io/descartesresearch/teastore-recommender
+$software run --name "teastore-recommender" -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=3333" -p 3333:8080 -d --restart=always docker.io/descartesresearch/teastore-recommender
 
 $software run -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=4444" -p 4444:8080 -d --restart=always docker.io/descartesresearch/teastore-image
 
 $software run -e "REGISTRY_HOST=$ip_address" -e "REGISTRY_PORT=10000" -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=8080" -p 8080:8080 -d --restart=always docker.io/descartesresearch/teastore-webui
+
+sleep 5
+
+$software stop teastore-recommender
+
+sleep 5
+
+$software start teastore-recommender

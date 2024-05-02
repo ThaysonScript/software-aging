@@ -32,11 +32,12 @@ ADD_DEBIAN_DOCKER_REPOSITORY() {
 }
 
 INSTALL_PYTHON_DEPENDENCIES() {
+  RESET_TO_ORIGINAL_DIR
   echo -e "installing python dependencies...."
 
-  apt install python3.11 python3.11-venv
+  apt install python3 python3-venv
 
-  python3.11 -m venv env
+  python3 -m venv env
 
   echo "export PATH=\$PATH:/root/podman/bin" >> env/bin/activate
 
