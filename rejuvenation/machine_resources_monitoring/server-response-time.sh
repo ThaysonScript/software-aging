@@ -8,7 +8,7 @@ FILE_NAME=$2  # define file name
 PRINT_USAGE() {
   local ip_example; ip_example=$(hostname -I | awk '{print $1}')
 
-  echo "IP USAGE EXAMPLE: $ip_example"
+  echo "IP USAGE EXAMPLE: $ip_example:8080"
   echo "FILE_NAME EXAMPLE: $0"
 }
 
@@ -30,7 +30,7 @@ while true; do
   timestamp=$(date +%d-%m-%Y-%H:%M:%S)  # capture current time in format ( +%d-%m-%Y-%H:%M:%S ) - timestamps
 
   # Make the HTTP request and capture the response time
-  response=$(curl -w "%{http_code}  %{time_total}" -o /dev/null -s "http://$ADDRESS:8080")
+  response=$(curl -w "%{http_code}  %{time_total}" -o /dev/null -s "http://$ADDRESS")
   code=$(echo "$response" | awk '{print $1}')
   response_time=$(echo "$response" | awk '{print $2}')
 
