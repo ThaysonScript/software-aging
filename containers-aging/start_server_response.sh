@@ -21,7 +21,7 @@ run_server_response() {
     pids+=($!)  # Adiciona o PID do processo à lista
 }
 
-run_server_response "192.168.1.105:8080" "docker_novo_ubuntu_velho.csv"
+run_server_response "192.168.1.105:8080" "docker_antigo_ubuntu24.csv"
 
 # ADD MORE ADDRESSES AND OTHERS CSVS
 # run_server_response "192.168.1.105:8080" "docker_novo_ubuntu_novo.csv"
