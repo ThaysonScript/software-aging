@@ -21,10 +21,12 @@ run_server_response() {
     pids+=($!)  # Adiciona o PID do processo à lista
 }
 
-run_server_response "192.168.0.101:8080" "docker_novo_ubuntu_velho.csv"
-run_server_response "192.168.0.102:8080" "docker_novo_ubuntu_novo.csv"
-run_server_response "192.168.0.103:8080" "podman_novo_ubuntu_novo.csv"
-run_server_response "192.168.0.104:8080" "docker_novo_ubuntu_velho.csv"
+run_server_response "192.168.1.105:8080" "docker_novo_ubuntu_velho.csv"
+
+# ADD MORE ADDRESSES AND OTHERS CSVS
+# run_server_response "192.168.1.105:8080" "docker_novo_ubuntu_novo.csv"
+# run_server_response "192.168.0.103:8080" "podman_novo_ubuntu_novo.csv"
+# run_server_response "192.168.0.104:8080" "docker_novo_ubuntu_velho.csv"
 
 sleep 31680
 EXIT
