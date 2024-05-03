@@ -39,7 +39,7 @@ while true; do
   fi
 
   # Add the timestamp and response time to the CSV file
-  echo "$timestamp;$response_time" >>"$FILE_NAME".csv
+  echo "$timestamp;$response_time" >>"$FILE_NAME"
 
   sleep 1 # wait one seconds for next monitoring request 
 done
