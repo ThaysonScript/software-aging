@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-server_response="./software-aging-v2/rejuvenation/machine_resources_monitoring/server-response-time.sh"
+server_response="../rejuvenation/machine_resources_monitoring/server-response-time.sh"
 
 pids=() # Array para armazenar os PIDs dos processos
 
