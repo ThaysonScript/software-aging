@@ -21,12 +21,12 @@ run_server_response() {
     pids+=($!)  # Adiciona o PID do processo à lista
 }
 
-run_server_response "192.168.1.105:8080" "docker_antigo_ubuntu24.csv"
+run_server_response "192.168.1.105:8080/tools.descartes.teastore.webui/" "docker_antigo_ubuntu24.csv"
 
 # ADD MORE ADDRESSES AND OTHERS CSVS
 # run_server_response "192.168.1.105:8080" "docker_novo_ubuntu_novo.csv"
 # run_server_response "192.168.0.103:8080" "podman_novo_ubuntu_novo.csv"
 # run_server_response "192.168.0.104:8080" "docker_novo_ubuntu_velho.csv"
 
-sleep 31680
+sleep 31680     # equivale a 11 dias em segundos; favor verificar isso direito
 EXIT
