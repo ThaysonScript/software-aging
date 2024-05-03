@@ -26,11 +26,5 @@ run_server_response "192.168.0.102:8080" "docker_novo_ubuntu_novo.csv"
 run_server_response "192.168.0.103:8080" "podman_novo_ubuntu_novo.csv"
 run_server_response "192.168.0.104:8080" "docker_novo_ubuntu_velho.csv"
 
-
-# while true; do  # Ou um sleep de 11 dias
-#     $time_for_exit
-#     EXIT
-# done
-
 sleep 31680
 EXIT
