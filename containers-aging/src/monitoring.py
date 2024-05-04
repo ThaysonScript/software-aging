@@ -64,9 +64,9 @@ class MonitoringEnvironment:
         container_metrics_thread.start()
 
     # process priority:
-    #   ["docker", "dockerd", "containerd", "containerd-shim"]
+    #   ['docker', 'dockerd', 'containerd', 'containerd-shim', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
     def start_docker_process_monitoring(self):
-        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy']
+        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
@@ -109,9 +109,9 @@ class MonitoringEnvironment:
             time.sleep(self.sleep_time - 1)
 
     # process priority:
-    #   ["podman", "conmon"]
+    #   ['podman', 'conmon', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
     def start_podman_process_monitoring(self):
-        processes = ['podman', 'conmon', 'cron', 'crun', 'systemd']
+        processes = ['podman', 'conmon', 'cron', 'crun', 'systemd', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
