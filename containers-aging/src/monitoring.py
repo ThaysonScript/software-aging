@@ -63,8 +63,10 @@ class MonitoringEnvironment:
         container_metrics_thread.daemon = True
         container_metrics_thread.start()
 
+    # process priority:
+    #   ["docker", "dockerd", "containerd", "containerd-shim"]
     def start_docker_process_monitoring(self):
-        processes = ["docker", "dockerd", "containerd", "java", "containerd-shim"]
+        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
