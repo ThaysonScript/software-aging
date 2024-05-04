@@ -1,42 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# usage example:
+#   ./server-response-time.sh 192.168.0.109 8080
 
-# usage ./remoteServiceResponse.sh 192.168.0.109 8080 6
-# Define the server ADDRESS
-ADDRESS=$1
-PORT=$2
-LIMIT=${3:-0}
-# LIMIT is the maximum acceptable average response time
+ADDRESS=$1    # define server address
+FILE_NAME=$2  # define file name
 
-# Create the CSV file header
-echo "date_time;response_time" >response_times.csv
-echo "reset_date_time" >reset_times.csv
+PRINT_USAGE() {
+  local ip_example; ip_example=$(hostname -I | awk '{print $1}')
 
-ITEMS=(0 0 0 0 0 0)
-count=0
-
-function calculate_array_mean {
-  local sum=0
-  local num_elements="${#ITEMS[@]}"
-
-  # Iterate over the array values and sum them
-  for value in "${ITEMS[@]}"; do
-    sum=$(echo "$sum + $value" | bc -l)
-  done
-  # Calculate the mean
-  mean=$(echo "$sum / $num_elements" | bc -l)
-
-  # Round the mean to the nearest integer
-  rounded_mean=$(echo "($mean + 0.5) / 1" | bc)
-  echo "$rounded_mean"
+  echo "IP USAGE EXAMPLE: $ip_example:8080"
+  echo "FILE_NAME EXAMPLE: $0"
 }
+
+CHECK_ARGUMENTS() {
+  if [ "$#" -ne 2 ]; then
+    PRINT_USAGE
+    echo "favor: passar 2 argumentos ao script"
+    exit 1
+  fi
+
+  # Create the CSV file header
+  echo "date_time;response_time" >"$FILE_NAME".csv
+}
+
+CHECK_ARGUMENTS "$@"
 
 # Infinite loop to measure response time
 while true; do
-  # Capture the current timestamp
-  timestamp=$(date +%d-%m-%Y-%H:%M:%S)
+  timestamp=$(date +%d-%m-%Y-%H:%M:%S)  # capture current time in format ( +%d-%m-%Y-%H:%M:%S ) - timestamps
 
   # Make the HTTP request and capture the response time
-  response=$(curl -w "%{http_code}  %{time_total}" -o /dev/null -s "http://$ADDRESS:$PORT")
+  response=$(curl -w "%{http_code}  %{time_total}" -o /dev/null -s "http://$ADDRESS")
   code=$(echo "$response" | awk '{print $1}')
   response_time=$(echo "$response" | awk '{print $2}')
 
@@ -44,27 +38,8 @@ while true; do
     response_time="-1"
   fi
 
-  if [ "$LIMIT" -gt 0 ]; then
-    if [ "$count" -ge ${#ITEMS[@]} ]; then
-      count=0
-    fi
-
-    ITEMS[$count]=$response_time
-    echo "${ITEMS[@]}"
-
-    mean=$(calculate_array_mean "${ITEMS[@]}")
-
-    if [ "$mean" -ge "$LIMIT" ]; then
-      ssh "root@$PORT" "ssh -p 2222 root@localhost "/sbin/shutdown -r now" > /dev/null 2>&1" >/dev/null 2>&1
-      echo "$timestamp" >>reset_times.csv
-    fi
-
-    count=$((count + 1))
-  fi
-
   # Add the timestamp and response time to the CSV file
-  echo "$timestamp;$response_time" >>response_times.csv
+  echo "$timestamp;$response_time" >>"$FILE_NAME"
 
-  # Wait for 1 second before making the next request
-  sleep 1
+  sleep 1 # wait one seconds for next monitoring request 
 done

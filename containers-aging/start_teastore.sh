@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 ip_address=$(hostname -I | awk '{print $1}')
 
 software=$1
