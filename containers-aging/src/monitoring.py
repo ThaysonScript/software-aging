@@ -95,11 +95,18 @@ class MonitoringEnvironment:
                 rss = data[12]
                 vsz = data[11]
 
-                write_to_file(
-                    f'{self.path}/{self.log_dir}/{process_name}.csv',
-                    'cpu;mem;rss;vsz;threads;swap;date_time',
-                    f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
-                )
+                if process_name == 'postgres':
+                    write_to_file(
+                        f'{self.path}/{self.log_dir}/postgres_process.csv',
+                        'cpu;mem;rss;vsz;threads;swap;date_time',
+                        f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
+                    )
+                else:
+                    write_to_file(
+                        f'{self.path}/{self.log_dir}/{process_name}.csv',
+                        'cpu;mem;rss;vsz;threads;swap;date_time',
+                        f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
+                    )
             except:
                 continue
 
