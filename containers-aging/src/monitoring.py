@@ -108,8 +108,10 @@ class MonitoringEnvironment:
             self.get_process_data(process)
             time.sleep(self.sleep_time - 1)
 
+    # process priority:
+    #   ["podman", "conmon"]
     def start_podman_process_monitoring(self):
-        processes = ["podman", "java", "conmon"]
+        processes = ['podman', 'conmon', 'cron', 'crun', 'systemd']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
