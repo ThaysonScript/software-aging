@@ -63,8 +63,10 @@ class MonitoringEnvironment:
         container_metrics_thread.daemon = True
         container_metrics_thread.start()
 
+    # process priority:
+    #   ["docker", "dockerd", "containerd", "containerd-shim"]
     def start_docker_process_monitoring(self):
-        processes = ["docker", "dockerd", "containerd", "java", "containerd-shim"]
+        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
@@ -106,8 +108,10 @@ class MonitoringEnvironment:
             self.get_process_data(process)
             time.sleep(self.sleep_time - 1)
 
+    # process priority:
+    #   ["podman", "conmon"]
     def start_podman_process_monitoring(self):
-        processes = ["podman", "java", "conmon"]
+        processes = ['podman', 'conmon', 'cron', 'crun', 'systemd']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
