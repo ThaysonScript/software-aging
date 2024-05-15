@@ -20,7 +20,7 @@ CHECK_ARGUMENTS() {
   fi
 
   # Create the CSV file header
-  echo "date_time;response_time" >"$FILE_NAME".csv
+  echo "date_time;response_time" >"$FILE_NAME"
 }
 
 CHECK_ARGUMENTS "$@"
