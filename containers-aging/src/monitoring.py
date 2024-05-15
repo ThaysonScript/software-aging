@@ -199,7 +199,7 @@ class MonitoringEnvironment:
 
         write_to_file(
             f"{self.path}/{self.log_dir}/disk.csv",
-            "used;time",
+            "used;date_time",
             f"{mem};{date_time}"
         )
 
@@ -213,7 +213,7 @@ class MonitoringEnvironment:
 
         write_to_file(
             f"{self.path}/{self.log_dir}/cpu.csv",
-            "usr;nice;sys;iowait;soft;time",
+            "usr;nice;sys;iowait;soft;date_time",
             f"{usr};{nice};{sys_used};{iowait};{soft};{date_time}"
         )
 
@@ -225,7 +225,7 @@ class MonitoringEnvironment:
 
         write_to_file(
             f"{self.path}/{self.log_dir}/memory.csv",
-            "used;cached;buffers;swap;time",
+            "used;cached;buffers;swap;date_time",
             f"{used};{cached};{buffers};{swap};{date_time}"
         )
 
@@ -234,6 +234,6 @@ class MonitoringEnvironment:
 
         write_to_file(
             f"{self.path}/{self.log_dir}/process.csv",
-            "zombies;time",
+            "zombies;date_time",
             f"{zombies};{date_time}"
         )

@@ -8,3 +8,4 @@ temp_postgres.tar
 temp_rabbitmq.tar
 temp_redis.tar
 .venv
+plot/data/*
