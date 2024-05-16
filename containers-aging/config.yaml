@@ -1,7 +1,7 @@
 general:
     runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     software: "docker" # Use docker or podman
-    old_software : false #used to creat logs folder
+    old_software: false #used to creat logs folder
     system: "debian" #used to creat logs folder
     old_system: false #used to creat logs folder
     scripts_folder: "/root/software-aging/containers-aging"
