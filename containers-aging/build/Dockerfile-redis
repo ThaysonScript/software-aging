@@ -1,0 +1,20 @@
+# Use a imagem base do Debian com a tag bookworm-20231218
+FROM debian:bookworm-20240311
+
+# Atualize os pacotes e instale o servidor nginx e o procps
+RUN apt-get update && apt-get install -y lsb-release curl gpg  && \
+    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list && \
+    apt-get update && apt-get -y install redis-server procps
+
+RUN update-rc.d redis-server disable
+
+# Expor a porta 80
+EXPOSE 6379
+
+# Copiar o script entrypoint.sh para a pasta /root/ e definir permissões de execução
+COPY ./entrypoint.sh /root/
+RUN chmod a+wrx /root/entrypoint.sh
+
+# Comando para iniciar o entrypoint.sh
+CMD ["/root/entrypoint.sh"]

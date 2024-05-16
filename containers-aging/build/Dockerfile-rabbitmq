@@ -1,0 +1,30 @@
+# Use a imagem base do Debian com a tag bookworm-20231218
+FROM debian:bookworm-20240311
+
+# Atualize os pacotes e instale o servidor nginx e o procps
+RUN echo "deb http://security.debian.org/debian-security buster/updates main" | tee -a /etc/apt/sources.list && \
+    apt-get update && apt-get install -y curl gnupg procps apt-transport-https libssl1.1
+
+RUN curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | gpg --dearmor | tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
+RUN curl -1sLf https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key | gpg --dearmor | tee /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg > /dev/null
+RUN curl -1sLf https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-server.9F4587F226208342.key | gpg --dearmor | tee /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg > /dev/null
+
+COPY rabbitmq.list /etc/apt/sources.list.d/
+COPY rabbitmq.conf /etc/rabbitmq/
+
+RUN apt-get update && apt-get install -y erlang-base \
+                           erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets \
+                           erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key \
+                           erlang-runtime-tools erlang-snmp erlang-ssl \
+                           erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
+
+RUN apt-get update && apt-get install -y rabbitmq-server
+
+EXPOSE 5672
+
+# Copiar o script entrypoint.sh para a pasta /root/ e definir permissões de execução
+COPY ./entrypoint.sh /root/
+RUN chmod a+wrx /root/entrypoint.sh
+
+# Comando para iniciar o entrypoint.sh
+CMD ["/root/entrypoint.sh"]

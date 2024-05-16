@@ -1,0 +1,51 @@
+// GLOBAL VARIABLES
+global alloc, fallback, fragmenting = 0, index = 0
+global who[400]
+
+
+// Probe triggered on memory allocation events, maintaining a record of processes occurrences
+probe kernel.trace("mm_page_alloc_extfrag"){	
+	if(who[execname(),pid(),pexecname(),ppid(),uid()] == 0){
+		if(index == 400){  //checks if the array is full
+			index = 0
+			print_processes()
+			delete who
+			printf("\n\n>>> Emptied array\n\n,")
+		}
+		index++
+	}
+
+	who[execname(),pid(),pexecname(),ppid(),uid()]++
+	alloc = $alloc_order
+	fallback = $fallback_order	
+
+	// Checks for fragmentation 
+	if(fallback<alloc){
+		fragmenting++
+	}
+}
+
+// Probe triggered at the beginning of the script execution
+probe begin{
+	printf("process;parent;UID;process_occurrences;fragmented;datetime\n");
+}
+
+// Function to print the recorded processes
+function print_processes() {
+    date = ctime(gettimeofday_s());
+	foreach([process,pid,pexecname,ppid,uid] in who){
+        occurrences = who[process,pid,pexecname,ppid,uid];
+		printf("%s(%d);%s(%d);%d;%d;%d;%s\n", process, pid, pexecname, ppid, uid, occurrences, fragmenting, date);
+	}
+}
+
+// Probe triggered at regular intervals (every 120 seconds) to print the recorded processes
+probe timer.s(120) {
+	print_processes();
+}
+
+// Probe triggered at the end of the script execution to print the final recorded processes
+probe end{
+    print_processes();
+}
+
