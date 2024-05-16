@@ -225,3 +225,4 @@ fi
 
 apt autoremove -y
 chmod a+wrx start_teastore.sh
+chmod a+wrx start_server_response.sh

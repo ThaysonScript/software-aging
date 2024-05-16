@@ -8,7 +8,7 @@ general:
 
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
-    sleep_time_container_metrics: 180  # Sleep time the machine data will be collected in seconds
+    sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
 
 stressload:
     max_stress_time: 180  # Time the stress will be running in seconds (default 259200s = 3 days)
@@ -21,12 +21,12 @@ stressload:
     max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
 
 containers:
-  - name: postgres
-    version: "15.6"
-    host_port: 5432
-    port: 5432
-    min_container_wait_time: 1
-    max_container_wait_time: 10
+#  - name: postgres
+#    version: "15.6"
+#    host_port: 5432
+#    port: 5432
+#    min_container_wait_time: 1
+#    max_container_wait_time: 10
 
   - name: redis
     version: "7.2.4"

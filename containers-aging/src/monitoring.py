@@ -148,6 +148,7 @@ class MonitoringEnvironment:
                 continue_if_error=True, error_informative=False)
 
             while up_time is None:
+                time.sleep(0.5)
                 up_time = execute_command(
                     f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                     continue_if_error=True, error_informative=False)
