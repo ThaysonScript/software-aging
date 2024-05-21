@@ -25,7 +25,8 @@ case $VIRTUALIZER_TYPE in
     #url="192.168.1.3:8080"
     ;;
   "xen")
-    url="http://localhost:8080"
+    url="http://172.20.101.23:8080"
+    #http://172.20.100.178:80
     ;;
   "lxc")
     echo "No information available for LXC at the moment"

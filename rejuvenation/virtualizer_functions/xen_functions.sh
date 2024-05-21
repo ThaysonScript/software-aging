@@ -58,7 +58,9 @@ REBOOT_VM() {
 #  Port redirecting need to be done in the dom0 
 SSH_REBOOT() {
   # using the loopback interface (127.0.0.1)
-  ssh -p 2222 root@localhost "reboot now"
+  # ssh -p 2222 root@localhost "reboot now"
+  # rebooting the domU from the dom0
+  ssh -p 22 root@172.20.100.178 "reboot now"
 }
 
 # FUNCTION=START_VM()
@@ -75,10 +77,10 @@ START_VM(){
 
 # FUNCTION=CREATE_VM()
 # DESCRIPTION:
-# 
+# # CHANGE IP ADDRESS
 # hostname - VM name;
 # ip - IP address for communication with the VM;
-# netmask - network mask, leave the default 255.255.255.0;
+# netmask - network mask, adapt it according to the server machine's netmask (/22);
 # gateway - IP address of the router;
 # vcpus - number of processor cores used by the vm;
 # memory - amount of RAM that the VM will use;
@@ -92,18 +94,17 @@ START_VM(){
 CREATE_VM() {
     local memory=512M
     local size=5G
-    local ip 
-    local netmask="255.255.255.0"
+    local ip=172.20.100.178
+    local netmask="255.255.252.0" #/22
     local gateway 
     local vcpus=2
     local password=12345678
-
-    #ip=$(ip route get 8.8.8.8 | awk '/src/ {print $7}')
+    
     gateway=$(ip route | awk '/default via/ {print $3}')
 
     xen-create-image \
     --hostname "$VM_NAME" \
-    --ip 10.0.2.17 \
+    --ip "$ip" \ 
     --netmask "$netmask" \
     --gateway "$gateway" \
     --bridge=xenbr0 \
@@ -128,6 +129,8 @@ CREATING_DOMU_ROLES(){
   local role_directory="/etc/xen-tools/role.d/"
   local interfaces_sed="$sed_directory/etc/network/interfaces.sed"
   local ssh_sed="$sed_directory/etc/ssh/sshd_config.sed"
+
+  echo "Creating DomU roles..."
 
   # Step 1: Create the sed.d directory if it doesn't exist
   if [ ! -d "$sed_directory" ]; then
@@ -157,7 +160,7 @@ s/^#PermitRootLogin.*/PermitRootLogin yes/
 EOF
 
   # Step 4: Update the role script to apply sed scripts 
-  cat <<EOF > "$role_directory/editor"
+  cat <<EOF > "${role_directory}/editor"
 #!/bin/sh
 #
 # Role-script for generalised editing of files for guests.
@@ -216,14 +219,14 @@ logMessage "Script \$0 finished"
 EOF
 
   # Step 5: Install and bring up Nginx in the DomU
-  cat <<EOF > "$$role_directory/install-nginx" # Create new role script 
+  cat <<EOF > "$role_directory/install-nginx" # Create new role script 
 #!/bin/sh
 #
 # Role-script for installing Nginx upon the new guest system.
 #
 
 # Assign the prefix variable representing the root directory of the guest system
-prefix=$1
+prefix="\$1"
 
 # Source common functions if available for installing a Debian package
 if [ -e /usr/share/xen-tools/common.sh ]; then
@@ -233,25 +236,25 @@ else
 fi
 
 # Log the start of the script
-logMessage "Script $0 starting"
+logMessage "Script \$0 starting"
 
 # Install Nginx package
-installDebianPackage "${prefix}" nginx
+installDebianPackage "\${prefix}" nginx
 
 #  Make sure the Nginx server isn't running, this will cause our
 # unmounting of the disk image to fail..
 
-chroot ${prefix} /etc/init.d/nginx stop
+chroot "\${prefix}" /etc/init.d/nginx stop
 
 #  Copy nginx update.conf & defaults from Dom0
-cp /etc/nginx/update.conf ${prefix}/etc/nginx/
-cp /etc/default/nginx ${prefix}/etc/default/
+cp /etc/nginx/update.conf "\${prefix}/etc/nginx/"
+cp /etc/default/nginx "\${prefix}/etc/default/"
 
 #  Log our finish
-logMessage Script $0 finished
+logMessage "Script \$0 finished"
 EOF
   # Set permissions for the role scripts
-  chmod +x "$role_directory/editor" "$$role_directory/install-nginx"
+  chmod +x "$role_directory/editor" "$role_directory/install-nginx"
 }
 
 # FUNCTION=CREATE_DISKS()
@@ -271,8 +274,6 @@ CREATE_DISKS() {
   local disks_quantity="$1"
   local disk_size="$2"
   local volume_group="vg0"  
-
-  mkdir -p ../xen_disks
 
   while [[ "$count" -le "$disks_quantity" ]]; do
     lvcreate -L "${disk_size}MB" -n disk$count "$volume_group"

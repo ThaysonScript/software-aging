@@ -28,6 +28,11 @@
             <stringProp name="Argument.value">${__P(rampUp)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="filename" elementType="Argument">
+            <stringProp name="Argument.name">filename</stringProp>
+            <stringProp name="Argument.value">${__P(filename)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
         </collectionProp>
       </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
@@ -46,42 +51,6 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
-          <boolProp name="ResultCollector.error_logging">false</boolProp>
-          <objProp>
-            <name>saveConfig</name>
-            <value class="SampleSaveConfiguration">
-              <time>true</time>
-              <latency>true</latency>
-              <timestamp>true</timestamp>
-              <success>true</success>
-              <label>true</label>
-              <code>true</code>
-              <message>true</message>
-              <threadName>true</threadName>
-              <dataType>true</dataType>
-              <encoding>false</encoding>
-              <assertions>true</assertions>
-              <subresults>true</subresults>
-              <responseData>false</responseData>
-              <samplerData>false</samplerData>
-              <xml>false</xml>
-              <fieldNames>true</fieldNames>
-              <responseHeaders>false</responseHeaders>
-              <requestHeaders>false</requestHeaders>
-              <responseDataOnError>false</responseDataOnError>
-              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-              <assertionsResultsToSave>0</assertionsResultsToSave>
-              <bytes>true</bytes>
-              <sentBytes>true</sentBytes>
-              <threadCounts>true</threadCounts>
-              <idleTime>true</idleTime>
-              <connectTime>true</connectTime>
-            </value>
-          </objProp>
-          <stringProp name="filename">testing_summary_report3.csv</stringProp> <!-- Irrelevant -->
-        </ResultCollector>
-        <hashTree/>
         <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
@@ -94,11 +63,11 @@
               <label>true</label>
               <code>true</code>
               <message>true</message>
-              <threadName>true</threadName>
-              <dataType>true</dataType>
+              <threadName>false</threadName>
+              <dataType>false</dataType>
               <encoding>false</encoding>
-              <assertions>true</assertions>
-              <subresults>true</subresults>
+              <assertions>false</assertions>
+              <subresults>false</subresults>
               <responseData>false</responseData>
               <samplerData>false</samplerData>
               <xml>false</xml>
@@ -108,14 +77,14 @@
               <responseDataOnError>false</responseDataOnError>
               <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
               <assertionsResultsToSave>0</assertionsResultsToSave>
-              <bytes>true</bytes>
-              <sentBytes>true</sentBytes>
-              <threadCounts>true</threadCounts>
+              <bytes>false</bytes>
+              <sentBytes>false</sentBytes>
+              <threadCounts>false</threadCounts>
               <idleTime>true</idleTime>
               <connectTime>true</connectTime>
             </value>
           </objProp>
-          <stringProp name="filename"></stringProp>
+          <stringProp name="filename">${filename}</stringProp> 
         </ResultCollector>
         <hashTree/>
         <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
@@ -123,7 +92,7 @@
           <boolProp name="CookieManager.clearEachIteration">true</boolProp>
         </CookieManager>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Home" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="H" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -152,7 +121,7 @@
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="L" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="username" elementType="HTTPArgument">
@@ -186,7 +155,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="List Products" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LP" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -224,7 +193,7 @@
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Look at Product" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LatP" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -243,7 +212,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Add Product to Cart" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Ad" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="addToCart" elementType="HTTPArgument">
@@ -277,7 +246,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="List Products with different page" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LP_D" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -315,7 +284,7 @@
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Add Product 2 to Cart" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Ad2" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="addToCart" elementType="HTTPArgument">
@@ -349,7 +318,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Logout" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Out" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="logout" elementType="HTTPArgument">
