@@ -13,7 +13,8 @@
 
 # GLOBAL VARIABLES:
 # VM_NAME="vmDebian"
-VM_NAME="debian125"
+#VM_NAME="debian125"
+VM_NAME="debian125-pre-aloc"
 
 # FUNCTION=TURN_VM_OFF()
 # DESCRIPTION:
@@ -76,7 +77,7 @@ CREATE_VM() {
   host_ip=$(hostname -I | awk '{print $1}')
 
   vboxmanage import "$VM_NAME".ova
-  vboxmanage modifyvm vmDebian --natpf1 "porta 8080,tcp,$host_ip,8080,,80"
+  vboxmanage modifyvm "$VM_NAME" --natpf1 "porta 8080,tcp,$host_ip,8080,,80"
 }
 
 # FUNCTION=CREATE_DISKS()

@@ -12,31 +12,40 @@
 
 # STATIC USAGE:
 #   vbox | kvm | xen | lxc
-readonly VIRTUALIZER_TYPE="xen"
+readonly VIRTUALIZER_TYPE="vbox"
 
-# ############################## IMPORTS #############################
+# ####################################### IMPORTS #############################################
 case "$VIRTUALIZER_TYPE" in
   "vbox")
     # shellcheck disable=SC1091
     source ./virtualizer_functions/vbox_functions.sh
+    echo -e "\nusing virtualbox for testing\n"
     ;;
   "kvm")
     # shellcheck disable=SC1091
     source ./virtualizer_functions/kvm_functions.sh
+    echo -e "\nusing kvm for testing\n"
     ;;
   "xen")
     # shellcheck disable=SC1091
     source ./virtualizer_functions/xen_functions.sh
+    echo -e "\nusing xen for testing\n"
     ;;
   "lxc")
     echo "No information available for LXC at the moment"
+    echo -e "\nusing lxc for testing\n"
     exit 1
     ;;
   *)
     echo "Unknown virtualizer type: $VIRTUALIZER_TYPE"
+    exit 1
     ;;
 esac
-# ####################################################################
+
+# UTILS
+# shellcheck disable=SC1091
+source "utils/time/sleeping.sh"
+# ############################################################################################
 
 #Time method
 minutes=0
@@ -49,61 +58,41 @@ force=0
 soft=0
 ssh=0
 
+# enable workload lifecycle
+enable=0
+work_cycle=0
+
+# workload pid process
+workload_process_pid=0
+
 # FUNCTION=PRINT_USAGE()
 # DESCRIPTION:
 #  Displays the script's usage information, including available options and their descriptions (works as a helper menu)
-function PRINT_USAGE() {
-  echo "script usage $(basename "$0")  [-t <integer> minutes] [-m <integer> mb] [-f (forced reboot)] [-s (soft reboot)] [-ssh (ssh reboot)]" >&1
+PRINT_USAGE() {
+  echo -e "script usage example:
+  bash run.sh -t (time_for_reboot) -s (soft reboot) -e -w=<value> (number workload cycles)
+
+  parameters:
+  [-t -f -s -ssh -e -w]
+
+  usages:
+  -t | --time [<integer> minutes]
+  -f | --force [forced reboot]
+  -s | --soft [soft reboot]
+  -ssh | --ssh [ssh reboot]
+  -e | --enable [enable workload lifecycle]
+  -w=<value> | --work_cycle=<value> [<integer> number workload cycles]" >&1
 }
 
-if [[ "$1" =~ ^((-{1,2})([Hh]$|[Hh][Ee][Ll][Pp])|)$ ]]; then
-  PRINT_USAGE
-  exit 0
-else
-  while [[ $# -gt 0 ]]; do
-    opt="$1"
-    shift
-    current_arg="$1"
-    if [[ "$current_arg" =~ ^-{1,2}.* ]]; then
-      echo "WARNING: You may have left an argument blank. Double-check your command."
-      exit 1
-    fi
-    case "$opt" in
-    "-t" | "--time")
-      minutes=$1
-      echo "Starting rejuvenation tests | The virtual machine will restart every $minutes minutes"
-      shift
-      ;;
-    "-f" | "--force")
-      force=1
-      shift
-      ;;
-    "-s" | "--soft")
-      soft=1
-      shift
-      ;;
-    "-ssh" | "--ssh")
-      ssh=1
-      shift
-      ;;
-    "-h" | "--help")
-      PRINT_USAGE
-      exit 0
-      ;;
-    *)
-      echo "ERROR: Invalid option: \"$opt\"" >&2
-      PRINT_USAGE
-      exit 1
-      ;;
-    esac
-  done
-fi
 
-function REBOOT_VM() {
+REBOOT_VM() {
   ((reboot_count++))
+
   local current_time
   current_time=$(date "+%Y.%m.%d-%H.%M.%S")
+
   echo "Rebooting VM $current_time - Reboot count: $reboot_count"
+
   if [ "$soft" -eq 1 ]; then
     GRACEFUL_REBOOT
   fi
@@ -117,32 +106,131 @@ function REBOOT_VM() {
   fi
 }
 
+
+WORKLOAD() {
+  local virtualizer=$1
+
+  case "$virtualizer" in
+    "vbox")
+      bash workloads/vbox_workload.sh &
+      workload_process_pid=$!
+      ;;
+    "kvm")
+      bash workloads/kvm_workload.sh &
+      workload_process_pid=$!
+      ;;
+    "xen")
+      bash workloads/xen_workload.sh &
+      workload_process_pid=$!
+      ;;
+    "lxc")
+      echo "No information available for LXC at the moment"
+      exit 1
+      ;;
+    *)
+      echo "Unknown virtualizer type: $VIRTUALIZER_TYPE"
+      exit 1
+      ;;
+  esac
+
+  echo -e "workload pid is: $workload_process_pid\n"
+}
+
+# FUNCTION=START_WORKLOAD()
+# DESCRIPTION:
+#   start the workload lifecycle
+# ATTENTION:
+#   Before starting a new load cycle,
+#   modify the two calls of the "SLEEPING" function 
+#   to the desired stress waiting time
+START_WORKLOAD() {
+  local i=0
+  local qtt=$1
+
+  while [[ "$i" != "$qtt" ]]; do
+    echo "current load lifecycle: $(( i+1 ))"
+    WORKLOAD "$VIRTUALIZER_TYPE"
+    SLEEPING 1 h  # 3 days
+
+    echo "killing pid workload: $workload_process_pid"
+
+    kill -9 "$workload_process_pid"
+
+    SLEEPING 15 m  # 12 hours
+
+    (( i+=1 ))
+  done
+}
+
+
+if [[ "$1" =~ ^((-{1,2})([Hh]$|[Hh][Ee][Ll][Pp])|)$ ]]; then
+  PRINT_USAGE
+  exit 0
+
+else
+  while [[ $# -gt 0 ]]; do
+    opt="$1"
+    shift
+
+    case "$opt" in
+      "-t" | "--time")
+        minutes=$1
+        echo "Starting rejuvenation tests | The virtual machine will restart every $minutes minutes"
+        shift
+        ;;
+
+      "-f" | "--force")
+        force=1
+        shift
+        ;;
+
+      "-s" | "--soft")
+        soft=1
+        shift
+        ;;
+
+      "-ssh" | "--ssh")
+        ssh=1
+        shift
+        ;;
+
+      "-e" | "--enable")
+        enable=1
+        shift
+        ;;
+
+      -w=* | --work_cycle=*)
+        work_cycle="${opt#*=}"
+        shift
+        ;;
+
+      "-h" | "--help")
+        PRINT_USAGE
+        exit 0
+        ;;
+
+      *)
+        echo "ERROR: Invalid option: \"$opt\"" >&2
+        PRINT_USAGE
+        exit 1
+        ;;
+    esac
+  done
+fi
+
 START_VM
 
-case "$VIRTUALIZER_TYPE" in
-  "vbox")
-    bash workloads/vbox_workload.sh &
-    ;;
-  "kvm")
-    bash workloads/kvm_workload.sh &
-    ;;
-  "xen")
-    bash workloads/xen_workload.sh &
-    ;;
-  "lxc")
-    echo "No information available for LXC at the moment"
-    exit 1
-    ;;
-  *)
-    echo "Unknown virtualizer type: $VIRTUALIZER_TYPE"
-    ;;
-esac
-
-machine_resources_monitoring/run "$VIRTUALIZER_TYPE" &
+bash machine_resources_monitoring/run "$VIRTUALIZER_TYPE" &
 
 while true; do
-  :
-  sleep "$minutes"m
+  if [[ "$enable" -eq 1 ]] && [[ "$work_cycle" != 0 ]]; then
+    echo -e "\nrunning test with workload lifecycle"
+    START_WORKLOAD "$work_cycle"  # 4 cycles
+  
+  else
+    echo -e "\nrunning test without workload lifecycle"
+    SLEEPING "$minutes" m
+  fi
 
   REBOOT_VM
 done
