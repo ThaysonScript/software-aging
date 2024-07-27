@@ -149,18 +149,20 @@ START_WORKLOAD() {
 
   while [[ "$i" != "$qtt" ]]; do
     echo "current load lifecycle: $(( i+1 ))"
+    SLEEPING 12 h  # 3 days - 12 h wait
+
     WORKLOAD "$VIRTUALIZER_TYPE"
-    SLEEPING 1 h  # 3 days
 
+    SLEEPING 3 d  # 12 hours - 3 days estress
     echo "killing pid workload: $workload_process_pid"
-
     kill -9 "$workload_process_pid"
-
-    SLEEPING 15 m  # 12 hours
 
     (( i+=1 ))
   done
+
+  SLEEPING 12 h  # 3 days - 12 h wait
 }
+
 
 
 if [[ "$1" =~ ^((-{1,2})([Hh]$|[Hh][Ee][Ll][Pp])|)$ ]]; then
