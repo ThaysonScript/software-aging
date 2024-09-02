@@ -76,7 +76,7 @@ PRINT_USAGE() {
   [-t -f -s -ssh -e -w]
 
   usages:
-  -t | --time [<integer> minutes]
+  -t | --time [<integer> hours]
   -f | --force [forced reboot]
   -s | --soft [soft reboot]
   -ssh | --ssh [ssh reboot]
@@ -231,7 +231,7 @@ while true; do
   else
     echo -e "\nrunning test without workload lifecycle"
     WORKLOAD "$VIRTUALIZER_TYPE"
-    SLEEPING "$minutes" m
+    SLEEPING "$minutes" h
 
     echo "killing pid workload: $workload_process_pid"
     kill -9 "$workload_process_pid"
