@@ -9,6 +9,14 @@
 source ../../machine_resources_monitoring/general_dependencies.sh
 # ####################################################################
 
+# ############################## GLOBAL VARS #########################
+LAN_INTERFACE="xenbr0"
+config_file="/etc/network/interfaces"
+default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
+GET_IP_ROUTE=$(ip a show "$default_interface" | grep "inet " | awk '{print $2}')
+GET_IP=$(ip addr show "$default_interface" | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+# ####################################################################
+
 # FUNCTION=SYSTEM_UPDATE()
 # DESCRIPTION:
 # Attempts to update the host's repositories and system apps
@@ -51,9 +59,6 @@ CONFIGURE_GRUB_FOR_XEN(){
 # DESCRIPTION:
 # Creates a bridge interface (xenbr0) in the dom0, connects it to the default network interface of the host by altering the '/etc/network/interfaces' file
 NETWORK_CONFIG(){
-  local config_file="/etc/network/interfaces"
-  local default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
-
     if [ -z "$default_interface" ]; then
         echo "Error: No proper network interface found."
         exit 1
@@ -71,12 +76,12 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-allow-hotplug eno1 
-iface eno1 inet manual
+allow-hotplug "$default_interface" 
+iface "$default_interface" inet manual
 
-auto xenbr0
-iface xenbr0 inet dhcp 
-    bridge_ports $default_interface
+auto "$LAN_INTERFACE"
+iface "$LAN_INTERFACE" inet dhcp 
+    bridge_ports "$default_interface"
 EOL
 
   service networking restart
@@ -88,18 +93,18 @@ EOL
 #   Redirect HTTP traffic from port 8080 on the host to port 80 on the Xen domU
 #   Check if the redirection rules are correctly applied
 REDIRECT_PORTS(){
+  mkdir -p /etc/iptables
+
   # Flush existing rules
   iptables -t nat -F
 
   echo "1" > /proc/sys/net/ipv4/ip_forward
 
-  LAN_INTERFACE="xenbr0"
+  iptables -t nat -A POSTROUTING -s "$GET_IP_ROUTE" -o "$LAN_INTERFACE" -j MASQUERADE
 
-  iptables -t nat -A POSTROUTING -s 172.20.101.23/22 -o xenbr0 -j MASQUERADE
+  iptables -t nat -A PREROUTING -i "$LAN_INTERFACE" -p tcp --dport 2222 -j DNAT --to "$GET_IP":22
 
-  iptables -t nat -A PREROUTING -t tcp -i xenbr0 --dport 2222 -j DNAT --to 172.20.100.178:22
-
-  iptables -t nat -A PREROUTING -t tcp -i xenbr0 --dport 8080 -j DNAT --to 172.20.100.178:80
+  iptables -t nat -A PREROUTING -i "$LAN_INTERFACE" -p tcp --dport 8080 -j DNAT --to "$GET_IP":80
 
   iptables-save > /etc/iptables/rules.v4
 
@@ -113,7 +118,7 @@ EOL
 
   apt-get install -y iptables-persistent
 
-  if iptables -t nat -L | grep -qE '(to:172.20.100.178:22|to:172.20.100.178:80)'; then
+  if iptables -t nat -L | grep -qE '(to:$GET_IP:22|to:$GET_IP:80)'; then
     echo "Port redirection rules have been successfully applied."
   else
     echo "Failed to apply port redirection rules. Please check iptables configuration."
@@ -149,7 +154,7 @@ DEPENDENCIES_MAIN(){
   NETWORK_CONFIG
   REDIRECT_PORTS
   STORAGE_SETUP
-  reboot now
+  shutdown -r now
 }
 
 DEPENDENCIES_MAIN
