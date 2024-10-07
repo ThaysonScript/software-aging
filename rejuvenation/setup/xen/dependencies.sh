@@ -76,12 +76,12 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-allow-hotplug "$default_interface" 
-iface "$default_interface" inet manual
+allow-hotplug $default_interface
+iface $default_interface inet manual
 
-auto "$LAN_INTERFACE"
-iface "$LAN_INTERFACE" inet dhcp 
-    bridge_ports "$default_interface"
+auto $LAN_INTERFACE
+iface $LAN_INTERFACE inet dhcp 
+    bridge_ports $default_interface
 EOL
 
   service networking restart
@@ -100,11 +100,11 @@ REDIRECT_PORTS(){
 
   echo "1" > /proc/sys/net/ipv4/ip_forward
 
-  iptables -t nat -A POSTROUTING -s "$GET_IP_ROUTE" -o "$LAN_INTERFACE" -j MASQUERADE
+  iptables -t nat -A POSTROUTING -s $GET_IP_ROUTE -o $LAN_INTERFACE -j MASQUERADE
 
-  iptables -t nat -A PREROUTING -i "$LAN_INTERFACE" -p tcp --dport 2222 -j DNAT --to "$GET_IP":22
+  iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 2222 -j DNAT --to $GET_IP:22
 
-  iptables -t nat -A PREROUTING -i "$LAN_INTERFACE" -p tcp --dport 8080 -j DNAT --to "$GET_IP":80
+  iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 8080 -j DNAT --to $GET_IP:80
 
   iptables-save > /etc/iptables/rules.v4
 
