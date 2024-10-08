@@ -51,3 +51,8 @@ EOL
 	# sudo apt update
 	# sudo apt install iptables
 	# sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
+
+ # update
+ 	# iptables -t nat -A POSTROUTING -s $GET_IP_ROUTE -o $LAN_INTERFACE -j MASQUERADE
+  	# para usar a faixa de ips ao inves de um ip especifico
+   	# verificar o ip route para obter a faixa de ip da interface
