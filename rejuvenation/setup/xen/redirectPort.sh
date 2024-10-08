@@ -51,6 +51,9 @@ EOL
 	# sudo apt update
 	# sudo apt install iptables
 	# sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
+ 	# isso libera o redirecionamento do nginx para o host do virtualbox usando porta 8080 -> 80
+  	# ver se isso funciona com o ssh
+   	# ver se isso funciona fora do virtualbox, um pc cliente
 
  # update
  	# iptables -t nat -A POSTROUTING -s $GET_IP_ROUTE -o $LAN_INTERFACE -j MASQUERADE
