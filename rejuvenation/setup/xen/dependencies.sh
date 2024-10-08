@@ -7,14 +7,7 @@
 
 # ############################## IMPORTS #############################
 source ../../machine_resources_monitoring/general_dependencies.sh
-# ####################################################################
-
-# ############################## GLOBAL VARS #########################
-LAN_INTERFACE="xenbr0"
-config_file="/etc/network/interfaces"
-default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
-GET_IP_ROUTE=$(ip a show "$default_interface" | grep "inet " | awk '{print $2}')
-GET_IP=$(ip addr show "$default_interface" | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+source ../../virtualizer_functions/xen_functions.sh
 # ####################################################################
 
 # FUNCTION=SYSTEM_UPDATE()
@@ -87,44 +80,6 @@ EOL
   service networking restart
 }
 
-# REDIRECT_PORTS()
-# DESCRIPTION:
-#   Redirect SSH traffic from port 2222 on the host to port 22 on the Xen domU
-#   Redirect HTTP traffic from port 8080 on the host to port 80 on the Xen domU
-#   Check if the redirection rules are correctly applied
-REDIRECT_PORTS(){
-  mkdir -p /etc/iptables
-
-  # Flush existing rules
-  iptables -t nat -F
-
-  echo "1" > /proc/sys/net/ipv4/ip_forward
-
-  iptables -t nat -A POSTROUTING -s $GET_IP_ROUTE -o $LAN_INTERFACE -j MASQUERADE
-
-  iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 2222 -j DNAT --to $GET_IP:22
-
-  iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 8080 -j DNAT --to $GET_IP:80
-
-  iptables-save > /etc/iptables/rules.v4
-
-  # Create a script to load iptables rules during startup
-  cat > /etc/network/if-pre-up.d/iptables <<EOL
-#!/bin/sh
-/sbin/iptables-restore < /etc/iptables/rules.v4
-EOL
-
-  chmod +x /etc/network/if-pre-up.d/iptables
-
-  apt-get install -y iptables-persistent
-
-  if iptables -t nat -L | grep -qE '(to:$GET_IP:22|to:$GET_IP:80)'; then
-    echo "Port redirection rules have been successfully applied."
-  else
-    echo "Failed to apply port redirection rules. Please check iptables configuration."
-  fi
-}
-
 # FUNCTION=STORAGE_SETUP()
 # DESCRIPTION:
 #   Configures /dev/sda4 to be the physical volume of LVM or 'Linux Logical Volume Manager' in order to 
@@ -141,8 +96,22 @@ EOL
 #
 # REMINDER: Before using this function, ensure that /dev/sda4 ( /dev/nvme0n1p4 ) is a dedicated partition you created for LVM use
 STORAGE_SETUP() { 
-    pvcreate /dev/nvme0n1p4 
-    vgcreate vg0 /dev/nvme0n1p4
+    printf "%s\n\n" "---------------- LS PARTITIONS --------------------"
+    lsblk --list
+    printf "\n%s\n\n" "---------------------------------------------------"
+    sleep 3
+
+    printf "%s\n" "------------- LVM CONFIGURATION -----------------"
+    printf "%s\n" "WHICH LVM PARTITION?"
+    printf "%s\n" "SET EXAMPLE: /dev/sda4"
+
+    read -p "SET PARTITION: " get_partition
+    sleep 2
+    printf "%s\n" "PARTITION CHOSEN: $get_partition"
+    printf "%s\n" "--------------------------------------------------"
+
+    pvcreate $get_partition 
+    vgcreate vg0 $get_partition
 }
 
 DEPENDENCIES_MAIN(){
@@ -154,7 +123,19 @@ DEPENDENCIES_MAIN(){
   NETWORK_CONFIG
   REDIRECT_PORTS
   STORAGE_SETUP
-  shutdown -r now
+
+  printf "%s\n" "REBOOTING MACHINE?"
+  printf "%s\n" "[ 1 ] - REBOOTING"
+  printf "%s\n" "[ 2 ] - NOT REBOOTING"
+
+  read -p "number: " number
+  if [[ "$number" -eq 1 ]]; then
+    echo "REBOOTING..."; sleep 3
+    shutdown -r now
+  else
+    printf "%s\n" "---> EXECUTING redirectPort.sh FOR REDIRECT PORTS"
+    echo "NOT REBOOTING..."; sleep 3
+  fi
 }
 
 DEPENDENCIES_MAIN

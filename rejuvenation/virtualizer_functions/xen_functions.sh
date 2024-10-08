@@ -8,8 +8,20 @@
 #   utilities for managing xen virtual machines                                               #
 ###############################################################################################
 
+# ############################## GLOBAL VARS #########################
 VM_NAME="xenDebian"
 HOST_IP="$(hostname -I | awk '{print $1}')"
+
+LAN_INTERFACE="xenbr0"
+config_file="/etc/network/interfaces"
+default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
+GET_IP_ROUTE=$(ip a show "$default_interface" | grep "inet " | awk '{print $2}')
+GET_IP=$(ip addr show "$default_interface" | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+
+IP=$GET_IP
+NEW_IP=$(echo "$IP" | awk -F. '{print $1"."$2"."$3"."($4+1)}')
+# ####################################################################
+
 
 # FUNCTION=TURN_VM_OFF()
 # DESCRIPTION:
@@ -94,13 +106,12 @@ START_VM(){
 CREATE_VM() {
     local memory=512M
     local size=5G
-    local ip=172.20.100.178
-    local netmask="255.255.252.0" #/22
-    local gateway 
+    local ip=$NEW_IP
+    local netmask="255.255.255.0" # /22 - check sub-net?
     local vcpus=2
     local password=12345678
     
-    gateway=$(ip route | awk '/default via/ {print $3}')
+    local gateway; gateway=$(ip route | awk '/default via/ {print $3}')
 
     xen-create-image \
     --hostname "$VM_NAME" \
