@@ -9,3 +9,19 @@
 GeneratedFileConfig() {
     echo "file configs >>>>>>>>>>>>>>" > generatedConfig.cfg
 }
+
+Lxc() {
+    echo "1"
+}
+
+Xen() {
+    echo "1"
+}
+
+Kvm() {
+    echo "1"
+}
+
+Virtualbox() {
+    echo "1"
+}
