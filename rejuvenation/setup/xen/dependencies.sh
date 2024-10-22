@@ -11,13 +11,6 @@ source ../../virtualizer_functions/xen_functions.sh
 source ./redirectPort.sh
 # ####################################################################
 
-# FUNCTION=SYSTEM_UPDATE()
-# DESCRIPTION:
-# Attempts to update the host's repositories and system apps
-SYSTEM_UPDATE() {
-  apt-get update && apt-get upgrade
-} 
-
 # FUNCTION=INSTALL_XEN_AND_DEPENDENCIES()
 # DESCRIPTION:
 # Installs Xen dependencies if not already installed
@@ -37,7 +30,7 @@ INSTALL_XEN_DEPENDENCIES() {
 # bridge-utils: Acts as a virtual switch, enabling the attachment of VMs to the external network
 # iptables: useful for port redirecting dom0's 2222 -> domU's 22 and dom0's 8080 -> domU's 80
 INSTALL_UTILS(){
-  apt install xen-tools lvm2 net-tools bridge-utils iptables 
+  apt install xen-tools lvm2 net-tools bridge-utils iptables -y
 }
 
 # FUNCTION=CONFIGURE_GRUB_FOR_XEN()

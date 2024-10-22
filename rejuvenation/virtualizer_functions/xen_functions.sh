@@ -23,6 +23,13 @@ NEW_IP=$(echo "$IP" | awk -F. '{print $1"."$2"."$3"."($4+1)}')
 # ####################################################################
 
 
+# FUNCTION=SYSTEM_UPDATE()
+# DESCRIPTION:
+# Attempts to update the host's repositories and system apps
+SYSTEM_UPDATE() {
+  apt update; apt upgrade
+} 
+
 # FUNCTION=TURN_VM_OFF()
 # DESCRIPTION:
 #   Tries to turn off the virtual machine
