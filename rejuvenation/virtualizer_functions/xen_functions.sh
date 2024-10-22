@@ -122,7 +122,7 @@ CREATE_VM() {
 
     xen-create-image \
     --hostname "$VM_NAME" \
-    --ip "$ip" \ 
+    --ip "$ip" \
     --netmask "$netmask" \
     --gateway "$gateway" \
     --bridge=xenbr0 \
@@ -132,7 +132,7 @@ CREATE_VM() {
     --dist bookworm \
     --password "$password" \
     --arch=amd64 \
-    --lvm=vg0 \ 
+    --lvm=vg0 \
     --role=editor \
     --finalrole=install-nginx
 }
