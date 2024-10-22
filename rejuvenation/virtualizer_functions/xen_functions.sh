@@ -8,18 +8,24 @@
 #   utilities for managing xen virtual machines                                               #
 ###############################################################################################
 
+############################################ IMPORTS ##########################################
+[[ $ACTIVATE -eq 1 ]] && source ../../configuration/configAll.sh
+###############################################################################################
+
 # ############################## GLOBAL VARS #########################
-VM_NAME="xenDebian"
-HOST_IP="$(hostname -I | awk '{print $1}')"
+[[ $ACTIVATE -ne 1 ]] && {
+  VM_NAME="xenDebian"
+  HOST_IP="$(hostname -I | awk '{print $1}')"
 
-LAN_INTERFACE="xenbr0"
-config_file="/etc/network/interfaces"
-default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
-GET_IP_ROUTE=$(ip a show "$default_interface" | grep "inet " | awk '{print $2}')
-GET_IP=$(ip addr show "$default_interface" | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+  LAN_INTERFACE="xenbr0"
+  config_file="/etc/network/interfaces"
+  default_interface=$(ip -o -4 route show to default | awk '{print $5}' | grep -v '^lo$' | grep -v '^vir' | head -n 1)
+  GET_IP_ROUTE=$(ip a show "$default_interface" | grep "inet " | awk '{print $2}')
+  GET_IP=$(ip addr show "$default_interface" | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
 
-IP=$GET_IP
-NEW_IP=$(echo "$IP" | awk -F. '{print $1"."$2"."$3"."($4+1)}')
+  IP=$GET_IP
+  NEW_IP=$(echo "$IP" | awk -F. '{print $1"."$2"."$3"."($4+1)}')
+}
 # ####################################################################
 
 
