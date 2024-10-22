@@ -3,7 +3,7 @@
 #	bash redirectPort.sh REDIRECT_PORTS
 
 # ############################## IMPORTS #############################
-source ../../virtualizer_functions/xen_functions.sh
+# source ../../virtualizer_functions/xen_functions.sh
 # ####################################################################
 
 # REDIRECT_PORTS()
@@ -19,10 +19,9 @@ REDIRECT_PORTS(){
 
   echo "1" > /proc/sys/net/ipv4/ip_forward
 
+  # NOT ADD DOUBLE QUOTE
   iptables -t nat -A POSTROUTING -s $GET_IP_ROUTE -o $LAN_INTERFACE -j MASQUERADE
-
   iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 2222 -j DNAT --to $NEW_IP:22
-
   iptables -t nat -A PREROUTING -i $LAN_INTERFACE -p tcp --dport 8080 -j DNAT --to $NEW_IP:80
 
   iptables-save > /etc/iptables/rules.v4

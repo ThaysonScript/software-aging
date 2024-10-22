@@ -8,6 +8,7 @@
 # ############################## IMPORTS #############################
 source ../../machine_resources_monitoring/general_dependencies.sh
 source ../../virtualizer_functions/xen_functions.sh
+source ./redirectPort.sh
 # ####################################################################
 
 # FUNCTION=SYSTEM_UPDATE()
@@ -120,9 +121,21 @@ DEPENDENCIES_MAIN(){
   INSTALL_XEN_DEPENDENCIES
   INSTALL_UTILS
   CONFIGURE_GRUB_FOR_XEN
-  NETWORK_CONFIG
   REDIRECT_PORTS
   STORAGE_SETUP
+
+  printf "%s\n" "NETWORK CONFIGURE?"
+  printf "%s\n" "[ 1 ] - YES"
+  printf "%s\n" "[ 2 ] - NO"
+
+  read -p "number: " num
+  if [[ "$num" -eq 1 ]]; then
+    echo "CONFIGURATING..."; sleep 3
+    NETWORK_CONFIG
+  else
+    printf "%s\n" "---> EXECUTING redirectPort.sh FOR REDIRECT PORTS"
+    echo "NOT CONFIGURATING..."; sleep 3
+  fi
 
   printf "%s\n" "REBOOTING MACHINE?"
   printf "%s\n" "[ 1 ] - REBOOTING"
@@ -139,4 +152,3 @@ DEPENDENCIES_MAIN(){
 }
 
 DEPENDENCIES_MAIN
-
