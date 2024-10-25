@@ -48,3 +48,7 @@ INSTALL_DEPENDENCIES() {
 }
 
 INSTALL_DEPENDENCIES
+
+sudo rm /usr/bin/vboxmanage
+
+sudo ln -s /usr/lib/virtualbox/VBoxManage /usr/bin/vboxmanage
