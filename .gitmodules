@@ -1,3 +1,6 @@
 [submodule "softwarers-aging/teastore-no-containers"]
 	path = softwarers-aging/teastore-no-containers
 	url = git@github.com:ThaysonScript/teastore-no-containers.git
+[submodule "dataAnalisys/VMStatPlot"]
+	path = dataAnalisys/VMStatPlot
+	url = git@github.com:ThaysonScript/VMStatPlot.git
