@@ -83,10 +83,10 @@ while true; do
 
   # MAYBE WE SHOULD REPLACE "SOURCE" FOR "BASH" AT SOME POINT
   source general_resources/MonitoringCpuSumAllCores.sh
-  source general_resources/monitoring-cpu.sh          # MONITOR AVERAGE CPU CONSUMPTION BY ALL CORE
-  source general_resources/monitoring-disk.sh         # MONITOR DISK CONSUMPTION ON ROOT UNIT "/"
-  source general_resources/monitoring-mem.sh          # MONITOR MEMORY CONSUMPTION, BUFFER, CACHE AND SWAP
-  source general_resources/monitoring-zombies.sh      # MONITOR NUMBER OF ZOMBIE PROCESSES
+  source general_resources/monitoring-cpu.sh              # MONITOR AVERAGE CPU CONSUMPTION BY ALL CORE
+  source general_resources/monitoring-disk.sh             # MONITOR DISK CONSUMPTION ON ROOT UNIT "/"
+  source general_resources/monitoring-mem.sh              # MONITOR MEMORY CONSUMPTION, BUFFER, CACHE AND SWAP
+  source general_resources/monitoring-zombies.sh          # MONITOR NUMBER OF ZOMBIE PROCESSES
 
   sleep 1
 done
