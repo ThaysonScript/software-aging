@@ -13,7 +13,8 @@
 
 # GLOBAL VARIABLES:
 # VM_NAME="vmDebian"
-VM_NAME="debian125"
+#VM_NAME="debian125"
+VM_NAME="debian125-pre-aloc"
 
 # FUNCTION=TURN_VM_OFF()
 # DESCRIPTION:
@@ -76,7 +77,7 @@ CREATE_VM() {
   host_ip=$(hostname -I | awk '{print $1}')
 
   vboxmanage import "$VM_NAME".ova
-  vboxmanage modifyvm vmDebian --natpf1 "porta 8080,tcp,$host_ip,8080,,80"
+  vboxmanage modifyvm "$VM_NAME" --natpf1 "porta 8080,tcp,$host_ip,8080,,80"
 }
 
 # FUNCTION=CREATE_DISKS()
@@ -188,4 +189,19 @@ ATTACH_DISK() {
 DETACH_DISK() {
   local port="$1"
   VBoxManage storageattach "$VM_NAME" --storagectl "SATA" --device 0 --port "$port" --type hdd --medium none
+}
+
+# EXPERIMENTALL FUNCTION
+CLONE_DISK() {
+  rm -r /root/VirtualBox\ VMs/$VM_NAME/$VM_NAME-disk002*
+
+  # - clonar disco vmdk:
+	VBoxManage clonemedium "/root/VirtualBox\ VMs/$VM_NAME/$VM_NAME-disk001.vmdk" "/root/VirtualBox\ VMs/$VM_NAME/$VM_NAME-disk002.vmdk" --format VMDK --variant Fixed
+
+# - remover disco dinâmico da vm e anexar o fixo:
+	VBoxManage storageattach "$VM_NAME" --storagectl "SATA" --port 0 --device 0 --medium none
+	VBoxManage storageattach "$VM_NAME" --storagectl "SATA" --port 0 --device 0 --type hdd --medium "/root/VirtualBox\ VMs/$VM_NAME/$VM_NAME-disk002.vmdk"
+
+# - apagar o disco dinâmico:
+	rm -r "/root/VirtualBox\ VMs/$VM_NAME/$VM_NAME-disk001.vmdk"
 }

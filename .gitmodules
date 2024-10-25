@@ -1,0 +1,3 @@
+[submodule "softwarers-aging/teastore-no-containers"]
+	path = softwarers-aging/teastore-no-containers
+	url = git@github.com:ThaysonScript/teastore-no-containers.git

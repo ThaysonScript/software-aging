@@ -27,10 +27,11 @@ KVM_HEADERS() {
 }
 
 XEN_HEADERS() {
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/xen_monitoring-xenbus.csv           # XENBUS HEADER METRICS
-  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-oxenstored.csv         # OXENSTORED HEADER METRICS
-  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xen-balloon.csv        # XENBALLOON HEADER METRICS
-  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xenconsoled.csv        # XENCONSOLED HEADER METRICS
+  echo "NAME;STATE;CPU(sec);CPU(%);MEM(k);MEM(%);MAXMEM(k);MAXMEM(%);VCPUS;NETS;NETTX(k);NETRX(k);VBDS;VBD_OO;VBD_RD;VBD_WR;VBD_RSECT;VBD_WSECT;SSID" > "logs/xenCpuMonitoring.csv"
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/xen_monitoring-xenbus.csv       # XENBUS HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-oxenstored.csv     # OXENSTORED HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xen-balloon.csv    # XENBALLOON HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xenconsoled.csv    # XENCONSOLED HEADER METRICS
 }
 
 MACHINE_HEADERS                                                                             # RUN HEADERS FOR HOST METRICS
@@ -56,6 +57,7 @@ case $VIRTUALIZER_TYPE in
     ;;
   "xen")
     XEN_HEADERS
+    processes/xenCpuMonitoring.sh &
     processes/xenstored_monitoring.sh &
     processes/xenbus_monitoring.sh &
     processes/xen-balloon_monitoring.sh &
