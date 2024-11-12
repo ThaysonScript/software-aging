@@ -7,7 +7,7 @@ VIRTUALIZER_TYPE=$1                                                             
 cd "$(dirname "$0")" || exit                                                                # ????????
 
 MACHINE_HEADERS() {
-  echo "%usr;%nice;%sys;%iowait;%irq;%soft;%steal;%guest;%gnice;%idle;%total_cpu;date_time" > logs/cpu_monitoring_sumAllCores.csv # CPU SUM_ALL_CORES HEADER METRICS
+  echo "%usr;%nice;%sys;%iowait;%irq;%soft;%steal;%guest;%gnice;%idle;%avg_idle;date_time" > logs/cpu_monitoring_sumAllCores.csv  # CPU SUM_ALL_CORES HEADER METRICS
   echo "usr;nice;sys;iowait;soft;date_time" >logs/machine_monitoring-cpu.csv                # CPU AVERAGE HEADER METRICS
   echo "used;date_time" >logs/machine_monitoring-disk.csv                                   # DISK HEADER METRICS
   echo "used;cached;buffer;swap-free;date_time" >logs/machine_monitoring-mem.csv            # MEMORY HEADER METRICS
