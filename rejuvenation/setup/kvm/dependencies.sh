@@ -9,6 +9,14 @@ source ../../virtualizer_functions/kvm_functions.sh
 
 readonly XML_FILE_PATH="/var/lib/libvirt/images/$VM_NAME.xml"
 
+OTHER_DEPENDENCIES() {
+    # MAKE INSTALL
+    [[ ! $(which make) ]] && {
+        echo "INSTALLING MAKE ......."
+        apt install make -y
+    }
+}
+
 INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
     local flag
 
@@ -101,6 +109,7 @@ INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
 }
 
 START_DEPENDENCIES() {
+    OTHER_DEPENDENCIES
     INSTALL_GENERAL_DEPENDENCIES
     INSTALL_KVM_LIBVIRT_DEPENDENCIES
 }
