@@ -14,7 +14,11 @@ SYSTEMTAP_COMPILE() {
   git clone "git://sourceware.org/git/systemtap.git"
   cd "systemtap" || exit
   
-  # ./configure --disable-option-checking '--prefix=/usr/local'  'python=:' 'pyexecdir=' 'python3=/usr/bin/python3' 'py3execdir=' --cache-file=/dev/null --srcdir=.
+  echo "deb http://deb.debian.org/debian-debug/ bookworm-debug main" >> /etc/apt/sources.list
+  apt update
+
+  apt install coreutils-dbgsym  # get debug errors list
+
   ./configure  python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap-*
   ./configure  '--disable-option-checking' '--prefix=/usr/local' 'python=:' 'pyexecdir=' 'python3=/usr/bin/python3' 'py3execdir=' '--cache-file=/dev/null' '--srcdir=.' python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap-*
 
