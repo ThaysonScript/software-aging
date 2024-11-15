@@ -29,6 +29,7 @@ SYSTEMTAP_COMPILE() {
 
 INSTALL_GENERAL_DEPENDENCIES() {
   reset; apt update
+  SYSTEMTAP_COMPILE
 
   #Download general packages including systemtap
   apt install linux-headers-"$KERNEL_VERSION" linux-image-"$KERNEL_VERSION"-dbg gnupg wget curl sysstat -y || {
