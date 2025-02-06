@@ -19,8 +19,8 @@ SYSTEMTAP_COMPILE() {
 
   apt install coreutils-dbgsym  # get debug errors list
 
-  ./configure  python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap-*
-  ./configure  '--disable-option-checking' '--prefix=/usr/local' 'python=:' 'pyexecdir=' 'python3=/usr/bin/python3' 'py3execdir=' '--cache-file=/dev/null' '--srcdir=.' python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap-*
+  ./configure  python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap_compiled
+  # ./configure  '--disable-option-checking' '--prefix=/usr/local' 'python=:' 'pyexecdir=' 'python3=/usr/bin/python3' 'py3execdir=' '--cache-file=/dev/null' '--srcdir=.' python=':' pyexecdir='' python3='/usr/bin/python3' py3execdir='' --prefix=/root/systemtap-*
 
   make; make install
 
