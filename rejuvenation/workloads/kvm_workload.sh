@@ -20,7 +20,6 @@ readonly wait_time_after_detach=10
 KVM_WORKLOAD() {
     local attach_count_disks=1
     local detach_count_disks=1
-    # local disk_path="/home/thayson-pc/Área de trabalho/software-aging/rejuvenation/setup/kvm/disks_kvm/disk"
     local disk
     disk="$(find / -name disk1.qcow2)"
 
@@ -34,7 +33,6 @@ KVM_WORKLOAD() {
         # detach loop
         for i in {1..3}; do
             DETACH_DISK "vd${identificador[$i - 1]}"
-            # virsh detach-disk debian12 "vd${identificador[$i - 1]}" --persistent --config # "$disk_path""$detach_count_disks".qcow2
 
             if [[ "$detach_count_disks" -eq "$max_disks" ]]; then
                 detach_count_disks=1

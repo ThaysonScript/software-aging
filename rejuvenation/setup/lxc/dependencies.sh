@@ -4,12 +4,15 @@
 source ../../machine_resources_monitoring/general_dependencies.sh
 # ####################################################################
 
-# SYSTEM_UPDATE()
-# DESCRIPTION:
-# Attempts to update the host's repositories and system apps
-SYSTEM_UPDATE() {
-  sudo apt-get update && sudo apt-get upgrade -y
-} 
+install_lxd() {
+    apt install lxd lvm2 qemu-system-x86 virt-viewer -y
+}
+
+
+lxd_configure() {
+    lxd init
+}
+
 
 INSTALL_UTILS() {
   echo "Instalando utilitários necessários: lxc-templates e bridge-utils..."

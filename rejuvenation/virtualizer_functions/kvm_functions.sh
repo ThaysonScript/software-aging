@@ -82,10 +82,12 @@ REMOVE_DISKS() {
 
   for disk_file in $disk_files; do
     echo -e "\n--->> Deletando o disco: $disk_file \n"
-    rm -f "$disk_file"
+    rm -rf "$disk_file"
     sleep 0.2
+
     if [[ -f $disk_file ]]; then
       echo -e "Erro: Falha ao deletar o disco: $disk_file \n"
+   
     else
       echo "Disco $disk_file deletado com sucesso"
     fi

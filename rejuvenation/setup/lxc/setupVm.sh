@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ############################## IMPORTS #############################
-source ../../virtualizer_functions/LxcManager.sh
+source ../../virtualizer_functions/lxc_functions.sh
 # ####################################################################
 
 readonly VM_NAME="vmDebian"
@@ -46,11 +46,6 @@ DELETE_VM() {
   lxc delete "$VM_NAME" --force
 }
 
-RESTART_VM() {
-  STOP_VM
-  sleep 5
-  START_VM
-}
 
 SETUP_LXC_VM() {
   CREATE_VM

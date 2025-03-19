@@ -9,22 +9,23 @@
 ###############################################################################################
 
 # ####################### IMPORTS #######################
-source ./virtualizer_functions/LxcManager.sh
+source ./virtualizer_functions/lxc_functions.sh
 # #######################################################
 
 readonly wait_time_after_attach=10
 readonly wait_time_after_detach=10
 
-LxcWorkloads() {
+LXC_WORKLOAD() {
   local count_disks=1
   local max_disks=50
-  local disk_path="path/to/your/lxc/disks/disk"
+  local disk_path="setup/lxc/disks_lxc"
 
   while true; do
     # attach
-    for port in {1..3}; do
-      local target="/mnt/disk$port"
-      ATTACH_DISK "${disk_path}${count_disks}.img" "$port"
+    for count in {1..3}; do
+      local disk="disk$count.qcow2"
+
+      ATTACH_DISK "$disk" "$disk_path/$disk" "/root/disk$count"
 
       if [[ "$count_disks" -eq "$max_disks" ]]; then
         count_disks=1
@@ -35,11 +36,11 @@ LxcWorkloads() {
     done
 
     # detach
-    for port in {1..3}; do
-      DETACH_DISK "disk$port"
+    for count in {1..3}; do
+      DETACH_DISK "disk$count"
       sleep $wait_time_after_detach
     done
   done
 }
 
-LxcWorkloads
+LXC_WORKLOAD
