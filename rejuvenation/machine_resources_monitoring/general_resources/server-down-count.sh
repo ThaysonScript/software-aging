@@ -4,10 +4,22 @@
 # and logging downtime information to a CSV file
 
 # ############################## IMPORTS #############################
-if [[ "$VIRTUALIZER_TYPE" == "kvm" ]]; then
-source ../../virtualizer_functions/kvm_functions.sh
+if [[ "$VIRTUALIZER_TYPE" == "vbox" ]]; then
+    source ../../virtualizer_functions/vbox_functions.sh
+
+elif [[ "$VIRTUALIZER_TYPE" == "kvm" ]]; then
+    source ../../virtualizer_functions/kvm_functions.sh
+
+elif [[ "$VIRTUALIZER_TYPE" == "xen" ]]; then
+    source ../../virtualizer_functions/xen_functions.sh
+
+elif [[ "$VIRTUALIZER_TYPE" == "lxd" ]]; then
+    source ../../virtualizer_functions/lxd_functions.sh
 fi
 # ####################################################################
+
+set -e
+trap 'echo "Erro detectado no comando: "; set -x;$BASH_COMMAND; set +x' ERR
 
 started_at=0
 is_offline=0
@@ -28,7 +40,7 @@ case $VIRTUALIZER_TYPE in
     url="http://172.20.101.23:8080"
     #http://172.20.100.178:80
     ;;
-  "lxc")
+  "lxd")
     echo "No information available for LXC at the moment"
     exit 1
     ;;

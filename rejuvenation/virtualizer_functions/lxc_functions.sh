@@ -10,11 +10,12 @@
 
 vm_name="vmDebian"
 
-iso_path='/root/*.iso'
-iso_name='iso-volume'
+iso_path='/root/debian-12.5.0-amd64-netinst.iso'
+iso_name='iso'
+
 
 storage_setup() {
-  printf "%s\n\n" "---------------- LS PARTITIONS --------------------"
+  printf "%s\n\n" "---------------- LISTING PARTITIONS --------------------"
   lsblk --list
   printf "\n%s\n\n" "---------------------------------------------------"
   sleep 3
@@ -28,9 +29,13 @@ storage_setup() {
   printf "%s\n" "PARTITION CHOSEN: $get_partition"
   printf "%s\n" "--------------------------------------------------"
 
+  # Cria uma "physical volume" no /dev/sda4
   pvcreate "$get_partition"
+
+  # Cria um Volume Group chamado vg0 em /dev/sda4
   vgcreate vg0 "$get_partition"
 
+  # criar pool lxd com o grupo de volume vg0
   lxc storage create lvm-pool lvm source=vg0
 }
 
@@ -38,7 +43,14 @@ lxd_detach_custom_volume_after_installation() {
   local vm_name=$1
   local iso_name=$2
 
+  STOP_VM
+
+  sleep 3
+
   lxc config device remove "$vm_name" "$iso_name"
+
+  START_VM
+  LXC_CONSOLE_VGA
 }
 
 lxd_empty_vm_configure() {
@@ -50,35 +62,47 @@ lxd_empty_vm_configure() {
   local iso_name=$5
   local iso_path=$6
 
-  lxc init "$vm_name" --empty --vm --config limits.cpu="$cpu" --config limits.memory="$memory"GiB --device root,size="$vm_disk_size"GiB
+  lxc init "$vm_name" --empty --vm --storage lvm-pool --config limits.cpu="$cpu" --config limits.memory="$memory"GiB --device root,size="$vm_disk_size"GiB
 
   lxc config device add "$vm_name" "$iso_name" disk source="$iso_path" boot.priority=10
+
+  lxd_start_vm_on_console
 
   lxd_detach_custom_volume_after_installation "$vm_name" "$iso_name"
 }
 
 lxd_start_vm_on_console() {
-  lxc start "$vm_name"
-  lxc console "$vm_name" --type=vga
+  printf "\n%s\n" "ESTA EM SSH -X ??"
+  read -p "[s/n]" esc
+
+  if [[ "$esc" == "s" ]]; then
+    START_VM
+    LXC_CONSOLE_VGA
+
+  else
+    START_VM
+    LXC_CONSOLE
+  fi
 }
 
 START_VM() {
   lxc start "$vm_name"
 }
 
+LXC_CONSOLE() {
+  lxc console "$vm_name"
+}
+
+LXC_CONSOLE_VGA() {
+  lxc console "$vm_name" --type=vga
+}
+
 STOP_VM() {
-  lxc stop "$vm_name"
+  lxc stop "$vm_name" --force
 }
 
 DELETE_VM() {
   lxc delete "$vm_name" --force
-}
-
-# FUNCTION=FORCED_REBOOT()
-# DESCRIPTION:
-#   Forcibly reboot the virtual machine
-FORCED_REBOOT() {
-  lxc restart "$vm_name"
 }
 
 CREATE_DISKS() {
@@ -96,7 +120,6 @@ CREATE_DISKS() {
   done
 }
 
-
 REMOVE_DISKS() {
   local disk_files
   disk_files=$(ls ./disks_lxc/*.qcow2) # lists all disks in the 'disks' directory
@@ -105,10 +128,10 @@ REMOVE_DISKS() {
     echo -e "\n--->> Deletando o disco: $disk_file \n"
     rm -rf "$disk_file"
     sleep 0.2
-    
+
     if [[ -f $disk_file ]]; then
       echo -e "Erro: Falha ao deletar o disco: $disk_file \n"
-    
+
     else
       echo "Disco $disk_file deletado com sucesso"
     fi

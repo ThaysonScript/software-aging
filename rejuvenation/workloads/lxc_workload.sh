@@ -18,7 +18,7 @@ readonly wait_time_after_detach=10
 LXC_WORKLOAD() {
   local count_disks=1
   local max_disks=50
-  local disk_path="setup/lxc/disks_lxc"
+  local disk_path="/root/software-aging/rejuvenation/setup/lxd/disks_lxc"
 
   while true; do
     # attach
@@ -37,7 +37,7 @@ LXC_WORKLOAD() {
 
     # detach
     for count in {1..3}; do
-      DETACH_DISK "disk$count"
+      DETACH_DISK "disk$count.qcow2"
       sleep $wait_time_after_detach
     done
   done

@@ -35,6 +35,11 @@ XEN_HEADERS() {
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xenconsoled.csv
 }
 
+LXD_HEADERS() {
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/lxd_vm_qemu_process.csv         # KVMHEADLESS HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/lxd_group_process_monitoring.csv   # LIBVIRT SERVICE HEADER METRICS
+}
+
 MACHINE_HEADERS                                                                             # RUN HEADERS FOR HOST METRICS
 
 stap -o logs/fragmentation.csv memory_fragmentation/fragmentation2b.stp &                   # MEMORY FRAGMENTATION SCRIPTS
@@ -43,7 +48,7 @@ stap -o logs/fragmentation.csv memory_fragmentation/fragmentation2b.stp &       
 # VBOX
 # KVM
 # XEN
-# LXC
+# LXD
 case $VIRTUALIZER_TYPE in
   "vbox")
     VBOX_HEADERS
@@ -65,17 +70,20 @@ case $VIRTUALIZER_TYPE in
     processes/xen-balloon_monitoring.sh &
     processes/xenconsoled_monitoring.sh &
     ;;
-  "lxc")
-    echo "No information available for LXC at the moment"
+  "lxd")
+    LXD_HEADERS
+    bash processes/lxd_group_process.sh &
+    bash processes/lxd_vm_qemu_process.sh &
     ;;
   *)
+    set -x
     echo "Unknown virtualizer type"
-    exit 1
+    set +x
     ;;
 esac
 
 # GET INFRASTRUCTURE OUTAGE WHEN IT HAPPENS
-general_resources/server-down-count.sh "$VIRTUALIZER_TYPE" &
+# general_resources/server-down-count.sh "$VIRTUALIZER_TYPE" &
 
 while true; do
   :
