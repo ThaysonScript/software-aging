@@ -19,13 +19,18 @@ LXC_WORKLOAD() {
   local count_disks=1
   local max_disks=50
   local disk_path="/root/software-aging/rejuvenation/setup/lxd/disks_lxc"
+  local -a ATTACHED_DISKS=()
 
   while true; do
     # attach
     for count in {1..3}; do
-      local disk="disk$count.qcow2"
+      local disk="disk$count_disks.qcow2"
 
       ATTACH_DISK "$disk" "$disk_path/$disk" "/root/disk$count"
+
+      ATTACHED_DISKS+=("$disk")
+      # shellcheck disable=SC2182
+      printf "\n" ""
 
       if [[ "$count_disks" -eq "$max_disks" ]]; then
         count_disks=1
@@ -36,10 +41,15 @@ LXC_WORKLOAD() {
     done
 
     # detach
-    for count in {1..3}; do
-      DETACH_DISK "disk$count.qcow2"
+    for disk in "${ATTACHED_DISKS[@]}"; do
+      DETACH_DISK "$disk"
       sleep $wait_time_after_detach
+      # shellcheck disable=SC2182
+      printf "\n" ""
     done
+
+    ATTACHED_DISKS=()
+  
   done
 }
 
