@@ -1,41 +1,54 @@
 #!/usr/bin/env bash
 
-mkdir -p ./machine_resources_monitoring/logs
+mkdir -p ./machine_resources_monitoring/logs                                                # MAKE LOGS FOLDER IF NOT EXIST
 
-VIRTUALIZER_TYPE=$1
+VIRTUALIZER_TYPE=$1                                                                         # GET VIRTUALIZER TYPE
 
-cd "$(dirname "$0")" || exit
+cd "$(dirname "$0")" || exit                                                                # ????????
 
 MACHINE_HEADERS() {
-  echo "usr;nice;sys;iowait;soft;date_time" >logs/machine_monitoring-cpu.csv
-  echo "used;date_time" >logs/machine_monitoring-disk.csv
-  echo "used;cached;buffer;swap-free;date_time" >logs/machine_monitoring-mem.csv
-  echo "num_zombies;date_time" >logs/machine_monitoring-zombies.csv
-  echo "offline_count;seconds;date_time" >logs/machineHost_server_status.csv
+  echo "%usr;%nice;%sys;%iowait;%irq;%soft;%steal;%guest;%gnice;%idle;%avg_idle;date_time" > logs/cpu_monitoring_sumAllCores.csv  # CPU SUM_ALL_CORES HEADER METRICS
+  echo "usr;nice;sys;iowait;soft;date_time" >logs/machine_monitoring-cpu.csv                # CPU AVERAGE HEADER METRICS
+  echo "used;date_time" >logs/machine_monitoring-disk.csv                                   # DISK HEADER METRICS
+  echo "used;cached;buffer;swap-free;date_time" >logs/machine_monitoring-mem.csv            # MEMORY HEADER METRICS
+  echo "num_zombies;date_time" >logs/machine_monitoring-zombies.csv                         # ZUMBIE HEADER METRICS
+  echo "offline_count;seconds;date_time" >logs/machineHost_server_status.csv                # STATUS SERVER HEADER METRICS
 }
 
 VBOX_HEADERS() {
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxSVC.csv
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxHeadless.csv
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxXPCOMIPCD.csv
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxHeadless.csv    # VBOXHEADLESS HEADER METRICS
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxSVC.csv         # VBOXSVC HEADER METRICS
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/vbox_monitoring-VBoxXPCOMIPCD.csv   # VBOXXPCOMIPCD HEADER METRICS
 }
 
 KVM_HEADERS() {
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/kvm_Headless_monitoring.csv
-  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/kvm_libvirtd_service_monitoring.csv
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/kvm_Headless_monitoring.csv         # KVMHEADLESS HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/kvm_libvirtd_service_monitoring.csv   # LIBVIRT SERVICE HEADER METRICS
 }
 
 XEN_HEADERS() {
+  echo "NAME;STATE;CPU(sec);CPU(%);MEM(k);MEM(%);MAXMEM(k);MAXMEM(%);VCPUS;NETS;NETTX(k);NETRX(k);VBDS;VBD_OO;VBD_RD;VBD_WR;VBD_RSECT;VBD_WSECT;SSID" > "logs/xenVmMetricsMonitoring.csv"
+  echo "NAME;STATE;CPU(sec);CPU(%);MEM(k);MEM(%);MAXMEM(k);MAXMEM(%);VCPUS;NETS;NETTX(k);NETRX(k);VBDS;VBD_OO;VBD_RD;VBD_WR;VBD_RSECT;VBD_WSECT;SSID" > "logs/xenDomain0MetricsMonitoring.csv"
   echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/xen_monitoring-xenbus.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-oxenstored.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xen-balloon.csv
   echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/xen_monitoring-xenconsoled.csv
 }
 
-MACHINE_HEADERS
+LXD_HEADERS() {
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/lxd_vm_qemu_process.csv         # KVMHEADLESS HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/lxd_group_process_monitoring.csv   # LIBVIRT SERVICE HEADER METRICS
+}
 
-stap -o logs/fragmentation.csv memory_fragmentation/fragmentation2b.stp &
+MACHINE_HEADERS                                                                             # RUN HEADERS FOR HOST METRICS
 
+stap -o logs/fragmentation.csv memory_fragmentation/fragmentation2b.stp &                   # MEMORY FRAGMENTATION SCRIPTS
+
+# ######## START HEADER AND PROCESSES BASED ON VIRTUALIZER TYPE
+# VBOX
+# KVM
+# XEN
+# LXD
 case $VIRTUALIZER_TYPE in
   "vbox")
     VBOX_HEADERS
@@ -50,30 +63,38 @@ case $VIRTUALIZER_TYPE in
     ;;
   "xen")
     XEN_HEADERS
+    processes/xenVmMetricsMonitoring.sh &
+    processes/xenDomain0MetricsMonitoring.sh &
     processes/xenstored_monitoring.sh &
     processes/xenbus_monitoring.sh &
     processes/xen-balloon_monitoring.sh &
     processes/xenconsoled_monitoring.sh &
     ;;
-  "lxc")
-    echo "No information available for LXC at the moment"
+  "lxd")
+    LXD_HEADERS
+    bash processes/lxd_group_process.sh &
+    bash processes/lxd_vm_qemu_process.sh &
     ;;
   *)
+    set -x
     echo "Unknown virtualizer type"
-    exit 1
+    set +x
     ;;
 esac
 
-general_resources/server-down-count.sh "$VIRTUALIZER_TYPE" &
+# GET INFRASTRUCTURE OUTAGE WHEN IT HAPPENS
+# general_resources/server-down-count.sh "$VIRTUALIZER_TYPE" &
 
 while true; do
   :
   date_time=$(date +%d-%m-%Y-%H:%M:%S)
 
-  source general_resources/monitoring-cpu.sh
-  source general_resources/monitoring-disk.sh
-  source general_resources/monitoring-mem.sh
-  source general_resources/monitoring-zombies.sh
+  # MAYBE WE SHOULD REPLACE "SOURCE" FOR "BASH" AT SOME POINT
+  source general_resources/MonitoringCpuSumAllCores.sh
+  source general_resources/monitoring-cpu.sh              # MONITOR AVERAGE CPU CONSUMPTION BY ALL CORE
+  source general_resources/monitoring-disk.sh             # MONITOR DISK CONSUMPTION ON ROOT UNIT "/"
+  source general_resources/monitoring-mem.sh              # MONITOR MEMORY CONSUMPTION, BUFFER, CACHE AND SWAP
+  source general_resources/monitoring-zombies.sh          # MONITOR NUMBER OF ZOMBIE PROCESSES
 
   sleep 1
 done

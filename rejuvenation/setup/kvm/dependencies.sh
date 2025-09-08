@@ -9,6 +9,7 @@ source ../../virtualizer_functions/kvm_functions.sh
 
 readonly XML_FILE_PATH="/var/lib/libvirt/images/$VM_NAME.xml"
 
+
 INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
     local flag
 
@@ -22,23 +23,19 @@ INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
         # host com interface
         if [[ "$escolha" -eq 1 ]]; then
             # apt install qemu-system libvirt-daemon-system -y
-            apt install --no-install-recommends qemu-system -y
-            apt install --no-install-recommends qemu-utils -y
-            apt install --no-install-recommends libvirt-daemon-system -y
-            apt install --no-install-recommends virtinst -y
-            apt install --no-install-recommends virt-viewer -y
-            apt install --no-install-recommends virt-manager -y
-
-            virt-manager
+            apt install qemu-system -y
+            apt install qemu-utils -y
+            apt install libvirt-daemon-system -y
+            apt install virt-manager -y
 
             flag=1
 
         # host sem interface
         elif [[ "$escolha" -eq 2 ]]; then
             # apt install --no-install-recommends qemu-system qemu-utils libvirt-daemon-system -y
-            apt install --no-install-recommends qemu-system -y
-            apt install --no-install-recommends qemu-utils -y
-            apt install --no-install-recommends libvirt-daemon-system -y
+            apt install qemu-system -y
+            apt install qemu-utils -y
+            apt install libvirt-daemon-system -y
 
             flag=2
 
@@ -65,13 +62,9 @@ INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
             fi
         }
 
-        printf "\nremova os ficheiros manualmente de libvirt com dpkg -r pacote\n\n"
+        printf "\nremova as pastas manualmente de libvirt com dpkg -r pacote\n\n"
 
-        apt remove virt-manager -y
-        apt remove virt-viewer -y
-        apt remove virtinst -y
-        apt remove dnsmasq -y
-        apt autoremove -y
+        apt remove virt-manager virtinst dnsmasq -y; apt autoremove -y
 
     else
         # add root user group on libvirt
@@ -100,9 +93,19 @@ INSTALL_KVM_LIBVIRT_DEPENDENCIES() {
     fi
 }
 
-START_DEPENDENCIES() {
-    INSTALL_GENERAL_DEPENDENCIES
+INTERNAL_DEPENDENCIES() {
+    # MAKE INSTALL
+    [[ ! $(which make) ]] && {
+        echo "INSTALLING MAKE ......."
+        apt install make -y
+    }
+
     INSTALL_KVM_LIBVIRT_DEPENDENCIES
+}
+
+START_DEPENDENCIES() {
+    INTERNAL_DEPENDENCIES                  # INTERNAL DEPENDENCIES
+    INSTALL_GENERAL_DEPENDENCIES        # EXTERNAL DEPENDENCIES
 }
 
 START_DEPENDENCIES
