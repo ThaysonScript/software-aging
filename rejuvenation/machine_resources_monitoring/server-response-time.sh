@@ -10,6 +10,8 @@ PRINT_USAGE() {
 
   echo "IP USAGE EXAMPLE: $ip_example:8080"
   echo "FILE_NAME EXAMPLE: $0"
+
+  echo "bash server-response-time.sh 192.168.0.109 8080"
 }
 
 CHECK_ARGUMENTS() {
