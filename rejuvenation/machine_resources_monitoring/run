@@ -7,7 +7,7 @@ VIRTUALIZER_TYPE=$1                                                             
 cd "$(dirname "$0")" || exit                                                                # ????????
 
 MACHINE_HEADERS() {
-  echo "%usr;%nice;%sys;%iowait;%irq;%soft;%steal;%guest;%gnice;%idle;%avg_idle;date_time" > logs/cpu_monitoring_sumAllCores.csv  # CPU SUM_ALL_CORES HEADER METRICS
+  echo "%usr;%nice;%sys;%iowait;%soft;date_time" > logs/cpu_monitoring_sumAllCores.csv      # CPU SUM_ALL_CORES HEADER METRICS
   echo "usr;nice;sys;iowait;soft;date_time" >logs/machine_monitoring-cpu.csv                # CPU AVERAGE HEADER METRICS
   echo "used;date_time" >logs/machine_monitoring-disk.csv                                   # DISK HEADER METRICS
   echo "used;cached;buffer;swap-free;date_time" >logs/machine_monitoring-mem.csv            # MEMORY HEADER METRICS
@@ -36,8 +36,8 @@ XEN_HEADERS() {
 }
 
 LXD_HEADERS() {
-  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/lxd_vm_qemu_process.csv         # KVMHEADLESS HEADER METRICS
-  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/lxd_group_process_monitoring.csv   # LIBVIRT SERVICE HEADER METRICS
+  echo "cpu;mem;vmrss;vsz;threads;swap;date_time" >logs/lxd_vm_qemu_process.csv             # KVMHEADLESS HEADER METRICS
+  echo "cpu;mem;vsz;rss;threads;swap;date_time" >logs/lxd_group_process_monitoring.csv      # LIBVIRT SERVICE HEADER METRICS
 }
 
 MACHINE_HEADERS                                                                             # RUN HEADERS FOR HOST METRICS

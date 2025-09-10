@@ -9,12 +9,7 @@ SumCpuMetrics() {
             nice += $4;
             sys += $5;
             iowait += $6;
-            irq += $7;
             soft += $8;
-            steal += $9;
-            guest += $10;
-            gnice += $11;
-            idle += $12;
 
             count++;
         }
@@ -25,8 +20,8 @@ SumCpuMetrics() {
         avg_idle = (count > 0) ? (idle / count) : 0;
 
         # Prints the header and data in CSV format separated by ;
-        printf "%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%s\n",
-            usr, nice, sys, iowait, irq, soft, steal, guest, gnice, idle, avg_idle, date_time
+        printf "%.2f;%.2f;%.2f;%.2f;%.2f;%s\n",
+            usr, nice, sys, iowait, soft, date_time
 
     }' >> logs/cpu_monitoring_sumAllCores.csv
 }
